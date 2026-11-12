@@ -33,7 +33,10 @@ export function PlaceholderPage({ page }: { page: PageId }) {
   const info = pages[page];
   return (
     <section className="placeholder" aria-label={info.title}>
-      <span className="placeholder-icon" aria-hidden="true">
+      <span
+        className="grid place-items-center w-[78px] h-[78px] bg-soft text-accent rounded-[24px] text-[37px] mb-6"
+        aria-hidden="true"
+      >
         {info.symbol}
       </span>
       <h2>
@@ -43,7 +46,9 @@ export function PlaceholderPage({ page }: { page: PageId }) {
           : info.title.toLocaleLowerCase('uk')}
       </h2>
       <p>Цей розділ поки порожній. Наповнимо його наступним кроком.</p>
-      <span className="quiet-tag">Незабаром</span>
+      <span className="[border:1px_solid_var(--border)] px-3 py-1.25 rounded-[20px] text-[10px] text-muted mt-2">
+        Незабаром
+      </span>
     </section>
   );
 }

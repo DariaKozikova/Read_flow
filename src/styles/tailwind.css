@@ -1,0 +1,329 @@
+@layer theme, base, components, utilities;
+/* Preserve Chromium's default heading and form styles by omitting Preflight. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@custom-variant compact (@media (max-width: 1000px));
+@custom-variant narrow (@media (max-width: 760px));
+
+@theme inline {
+  --spacing: 4px;
+  --color-canvas: var(--bg);
+  --color-surface: var(--surface);
+  --color-sidebar: var(--sidebar);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-soft: var(--soft);
+  --color-input: var(--input);
+}
+
+:root {
+  color-scheme: light;
+  --bg: #f6f5f0;
+  --surface: #fffefa;
+  --sidebar: #eeeee5;
+  --text: #293b30;
+  --muted: #747d72;
+  --border: #dedfd4;
+  --accent: #42664b;
+  --accent-text: #ffffff;
+  --soft: #e2e9db;
+  --input: #fbfaf6;
+  --shadow: 0 16px 50px #293b3008;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #191f1b;
+  --surface: #242c26;
+  --sidebar: #1d251f;
+  --text: #e7eadd;
+  --muted: #a5b09e;
+  --border: #394438;
+  --accent: #abc398;
+  --accent-text: #1d2a20;
+  --soft: #354432;
+  --input: #202821;
+  --shadow: 0 16px 50px #00000018;
+}
+@layer base {
+  * {
+    @apply box-border;
+  }
+  body {
+    @apply m-0 bg-canvas text-ink [font:15px/1.5_'Segoe_UI',_sans-serif];
+  }
+  button,
+  input {
+    @apply [font:inherit];
+  }
+  button {
+    @apply cursor-pointer [color:inherit];
+  }
+  button:disabled {
+    @apply cursor-wait opacity-55;
+  }
+  button:focus-visible,
+  input:focus-visible {
+    @apply [outline:3px_solid_var(--accent)] [outline-offset:4px];
+  }
+  h1,
+  h2,
+  p {
+    @apply mt-0;
+  }
+  p {
+    @apply text-muted;
+  }
+  input {
+    @apply w-full px-3.75 py-3.25 [border:1px_solid_var(--border)] rounded-[10px] bg-input text-ink;
+  }
+  fieldset {
+    @apply border-0 p-0 m-0 min-w-0;
+  }
+}
+.visually-hidden {
+  @apply absolute w-[1px] h-[1px] overflow-hidden [clip-path:inset(50%)] whitespace-nowrap;
+}
+.brand {
+  @apply flex items-center gap-2.75 font-bold text-[23px] tracking-[-0.8px];
+}
+.brand-mark {
+  @apply grid place-items-center w-[37px] h-10 text-accent-text bg-accent rounded-[10px] text-[27px];
+}
+.brand small {
+  @apply block text-[10px] font-normal text-muted tracking-[0.3px] mt-0.75;
+}
+.eyebrow {
+  @apply text-[10px] font-bold tracking-[2px] text-accent;
+}
+.theme-picker {
+  @apply flex p-1 gap-0.75 [border:1px_solid_var(--border)] bg-canvas rounded-[10px];
+}
+.theme-picker button {
+  @apply flex-1 flex items-center justify-center gap-1.75 border-0 bg-transparent text-muted px-3.25 py-2 rounded-[7px] text-[12px];
+}
+.theme-picker button[aria-pressed='true'] {
+  @apply bg-surface text-ink [box-shadow:0_1px_5px_#0000000b];
+}
+.avatar {
+  @apply grid place-items-center w-[43px] h-[43px] shrink-0 rounded-[50%] [font:28px_Georgia,_serif] text-[#3c573b] bg-[#e4eacb];
+}
+.avatar-moon {
+  @apply bg-[#e6e0f0] text-[#65517c];
+}
+.avatar-sun {
+  @apply bg-[#f4e7c7] text-[#8b672b];
+}
+.avatar-flower {
+  @apply bg-[#efdadb] text-[#915765];
+}
+.avatar-book {
+  @apply bg-[#dbe5e8] text-[#436e79];
+}
+.avatar-star {
+  @apply bg-[#e4e0cd] text-[#75643c];
+}
+.primary-button {
+  @apply flex items-center justify-center gap-5.5 w-full px-5 py-3.5 border-0 rounded-[10px] bg-accent text-accent-text font-semibold;
+}
+.error,
+.global-error {
+  @apply bg-[#fbe5df] text-[#8e3025] p-3 rounded-[8px] text-[13px];
+}
+.global-error {
+  @apply fixed z-10 top-3.75 left-1/2 [transform:translateX(-50%)] max-w-[90vw];
+}
+.loading {
+  @apply min-h-screen flex flex-col items-center justify-center gap-5;
+}
+.loading button {
+  @apply w-auto;
+}
+
+.onboarding-header {
+  @apply flex items-center justify-between gap-5;
+}
+.welcome-copy {
+  @apply px-0 py-3;
+}
+.welcome-copy h1 {
+  @apply [font:54px/1.13_Georgia,_serif] tracking-[-1.8px] mx-0 my-5;
+}
+.welcome-copy h1 em {
+  @apply text-accent font-normal;
+}
+.welcome-copy > p {
+  @apply text-[14px] leading-[1.8];
+}
+
+.art-book {
+  @apply absolute w-[120px] h-[172px] rounded-[3px_9px_9px_3px] [box-shadow:9px_12px_15px_#00000017] [border-left:5px_solid_#ffffff24];
+}
+.art-book.back {
+  @apply bg-[#a5ae83] text-[#eff0da] left-[69px] top-[23px] [transform:rotate(-16deg)] p-5.5 [font:23px_Georgia,_serif];
+}
+.art-book.front {
+  @apply bg-[#365642] text-[#e3e6c8] left-[154px] top-12 [transform:rotate(12deg)] px-4 py-6;
+}
+.art-book.front span {
+  @apply [font:20px/1.2_Georgia,_serif] tracking-[1px];
+}
+.art-book.front small {
+  @apply block text-[7px] mt-4.5 tracking-[2px];
+}
+
+.welcome-copy .welcome-footnote {
+  @apply text-[11px];
+}
+.onboarding-card {
+  @apply [padding:30px_34px] bg-surface [border:1px_solid_var(--border)] rounded-[20px] [box-shadow:var(--shadow)];
+}
+.step-label {
+  @apply flex justify-between text-muted text-[9px] tracking-[1.7px] mb-6;
+}
+.step-label span {
+  @apply tracking-[0];
+}
+.onboarding-card h2 {
+  @apply text-[25px] tracking-[-0.7px] mb-1.75;
+}
+.onboarding-card > p {
+  @apply text-[12px] mb-6;
+}
+.field-label {
+  @apply block text-[12px] font-semibold [margin:20px_0_8px];
+}
+
+.avatar-choice {
+  @apply [background:none] p-1 [border:2px_solid_transparent] rounded-[50%];
+}
+.avatar-choice.selected {
+  @apply border-accent;
+}
+.avatar-choice .avatar {
+  @apply w-10 h-10;
+}
+.goal-input {
+  @apply flex items-center gap-3;
+}
+.goal-input input {
+  @apply w-22.5;
+}
+.goal-input span {
+  @apply text-[12px] text-muted;
+}
+.goal-presets {
+  @apply flex gap-1.75 mt-2.5;
+}
+.goal-presets button {
+  @apply bg-transparent [border:1px_solid_var(--border)] rounded-[6px] px-2.75 py-1.25 text-[11px];
+}
+.goal-presets button[aria-pressed='true'] {
+  @apply bg-soft border-accent;
+}
+.field-hint {
+  @apply text-[11px] [margin:10px_0_25px];
+}
+.privacy-note {
+  @apply text-center text-[10px]! leading-[1.8] [margin:17px_0_0]!;
+}
+
+.sidebar {
+  @apply sticky top-0 h-screen flex flex-col [padding:30px_20px_18px] bg-sidebar [border-right:1px_solid_var(--border)];
+}
+.sidebar .brand {
+  @apply text-[21px];
+}
+
+.sidebar nav {
+  @apply grid gap-1.75;
+}
+.nav-item {
+  @apply [background:none] w-full flex items-center gap-3 border-0 rounded-[9px] text-muted text-left px-3.75 py-3 text-[13px];
+}
+.nav-item > span {
+  @apply text-[22px] w-5.5 text-center leading-none;
+}
+.nav-item:hover {
+  @apply bg-soft;
+}
+.nav-item.active {
+  @apply bg-soft text-accent font-[650];
+}
+
+.sidebar-profile {
+  @apply flex items-center gap-2.5 [border-top:1px_solid_var(--border)] mt-5.5 pt-5;
+}
+.sidebar-profile > div {
+  @apply min-w-0;
+}
+.sidebar-profile strong {
+  @apply text-[12px] block overflow-hidden text-ellipsis whitespace-nowrap max-w-[125px];
+}
+.sidebar-profile small {
+  @apply text-[10px] text-muted;
+}
+
+.page-header {
+  @apply flex justify-between items-center gap-5 [border-bottom:1px_solid_var(--border)] pb-6.25;
+}
+.page-header h1 {
+  @apply text-[30px] tracking-[-0.8px] mb-1.5;
+}
+.page-header p {
+  @apply text-[12px] mb-0;
+}
+.page-header .eyebrow {
+  @apply text-[9px] mb-3.25;
+}
+
+.placeholder {
+  @apply min-h-[380px] flex-1 flex flex-col items-center justify-center text-center px-3.75 py-10;
+}
+
+.placeholder h2 {
+  @apply text-[20px] font-medium mb-2.25;
+}
+.placeholder p {
+  @apply text-[12px] max-w-[300px];
+}
+
+.workspace-footer {
+  @apply [border-top:1px_solid_var(--border)] pt-4 text-muted text-[10px] flex justify-between;
+}
+@media (max-width: 1000px) {
+  .welcome-copy h1 {
+    @apply text-[44px];
+  }
+}
+@media (max-width: 760px) {
+  .welcome-copy {
+    @apply hidden;
+  }
+  .onboarding-header .brand {
+    @apply text-[20px];
+  }
+
+  .sidebar {
+    @apply px-3 py-6;
+  }
+  .sidebar .brand {
+    @apply text-[17px];
+  }
+  .sidebar .brand-mark {
+    @apply w-7 text-[22px];
+  }
+
+  .workspace-footer span {
+    @apply hidden;
+  }
+  .nav-item {
+    @apply text-[12px] p-2.75;
+  }
+  .sidebar-profile strong {
+    @apply max-w-22.5;
+  }
+}

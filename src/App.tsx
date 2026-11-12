@@ -82,7 +82,7 @@ export function App() {
           onSignIn={() => setSignedIn(true)}
         />
       ) : (
-        <div className="app-shell">
+        <div className="grid grid-cols-[245px_1fr] min-h-screen narrow:grid-cols-[195px_1fr]">
           <Sidebar
             profile={account.profile}
             page={page}
@@ -91,14 +91,16 @@ export function App() {
             onThemeChange={changeTheme}
             saving={savingTheme}
           />
-          <main className="workspace">
+          <main className="[padding:45px_48px_24px] flex flex-col min-w-0 compact:px-6.25 compact:py-8.75 narrow:px-5 narrow:py-7.5">
             <header className="page-header">
               <div>
                 <p className="eyebrow">ТВІЙ ЧИТАЦЬКИЙ ЩОДЕННИК</p>
                 <h1>{pages[page].title}</h1>
                 <p>{pages[page].subtitle}</p>
               </div>
-              <span className="outline-badge">Твій власний темп</span>
+              <span className="[border:1px_solid_var(--border)] px-3 py-1.75 rounded-[20px] text-muted text-[10px] whitespace-nowrap compact:hidden">
+                Твій власний темп
+              </span>
             </header>
             <PlaceholderPage page={page} />
             <footer className="workspace-footer">
