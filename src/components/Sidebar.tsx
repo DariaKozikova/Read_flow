@@ -1,0 +1,56 @@
+import { Avatar } from './Avatar';
+import { ThemePicker } from './ThemePicker';
+import { pages, type PageId } from '../pages/PlaceholderPage';
+import type { ProfileInput, Theme } from '../shared';
+export function Sidebar({
+  profile,
+  page,
+  onNavigate,
+  theme,
+  onThemeChange,
+  saving,
+}: {
+  profile: ProfileInput;
+  page: PageId;
+  onNavigate: (page: PageId) => void;
+  theme: Theme;
+  onThemeChange: (theme: Theme) => void;
+  saving: boolean;
+}) {
+  return (
+    <aside className="sidebar">
+      <div className="brand">
+        <span className="brand-mark">▥</span>
+        <div>
+          ReadingFlow<small>Час для нової історії</small>
+        </div>
+      </div>
+      <p className="nav-label">ТВІЙ ПРОСТІР</p>
+      <nav aria-label="Основна навігація">
+        {(Object.keys(pages) as PageId[]).map((id) => (
+          <button
+            key={id}
+            className={`nav-item ${page === id ? 'active' : ''}`}
+            aria-current={page === id ? 'page' : undefined}
+            onClick={() => onNavigate(id)}
+          >
+            <span aria-hidden="true">{pages[id].symbol}</span>
+            {pages[id].title}
+          </button>
+        ))}
+      </nav>
+      <div className="sidebar-bottom">
+        <ThemePicker value={theme} onChange={onThemeChange} disabled={saving} />
+        <div className="sidebar-profile">
+          <Avatar value={profile.avatar} />
+          <div>
+            <strong>{profile.name}</strong>
+            <small>Ціль · {profile.dailyGoalMinutes} хв / день</small>
+          </div>
+          <span className="profile-dot" aria-label="Локальний профіль" />
+        </div>
+        <p className="local-caption">Твій профіль на цьому пристрої</p>
+      </div>
+    </aside>
+  );
+}
