@@ -20,10 +20,15 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
     setError('');
     setSaving(true);
     try {
+      const cover = fields.get('cover');
       const book = await window.api.addBook({
         title,
         author: String(fields.get('author')).trim(),
         total_pages: Number(fields.get('totalPages')),
+        cover:
+          cover instanceof File && cover.name
+            ? new Uint8Array(await cover.arrayBuffer())
+            : undefined,
       });
       form.reset();
       setFormVersion((version) => version + 1);

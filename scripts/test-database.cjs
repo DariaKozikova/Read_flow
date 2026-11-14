@@ -40,6 +40,7 @@ try {
   db = openDatabase(filename);
   assert.equal(db.getAccount().profile, null);
   assert.equal(db.listBooks()[0].title, 'Наявна книга');
+  assert.equal(db.listBooks()[0].coverUrl, null);
   assert.throws(() =>
     db.createProfile({ name: ' ', avatar: 'leaf', dailyGoalMinutes: 30 }),
   );
@@ -68,9 +69,22 @@ try {
   db = openDatabase(filename);
   assert.deepEqual(db.getAccount(), { profile, theme: 'dark' });
   assert.equal(db.listBooks().length, 1);
+  const coverBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aDaoAAAAASUVORK5CYII=';
+  const coveredBook = {
+    title: 'Книга з обкладинкою',
+    author: '',
+    total_pages: 100,
+    cover: Buffer.from(coverBase64, 'base64'),
+  };
+  assert.throws(() =>
+    db.addBook({ ...coveredBook, cover: Buffer.from('bad') }),
+  );
+  const savedCover = db.addBook(coveredBook);
+  assert.equal(savedCover.coverUrl, `data:image/png;base64,${coverBase64}`);
   db.setTheme('light');
   assert.equal(db.getAccount().theme, 'light');
-  const bookId = db.listBooks()[0].id;
+  const bookId = db.listBooks()[1].id;
   const start = Date.UTC(2026, 10, 1);
   const end = Date.UTC(2026, 11, 1);
   assert.throws(() => db.listCalendarEntries(end, start));
@@ -97,6 +111,7 @@ try {
     .run(bookId, start + 60_000, start + 150_000, 90_000);
   check.close();
   db = openDatabase(filename);
+  assert.deepEqual(db.listBooks()[0], savedCover);
   assert.deepEqual(
     db
       .listCalendarEntries(start, end)

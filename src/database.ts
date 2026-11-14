@@ -3,10 +3,38 @@ import schema from '../database/schema.sql?raw';
 import type { Book, CalendarEntry, NewBook, ReadingPlan } from './shared';
 import {
   avatars,
+  maxBookCoverBytes,
   type AccountState,
   type ProfileInput,
   type Theme,
 } from './shared';
+
+const bookColumns =
+  'id, title, author, total_pages, current_page, status, cover';
+type BookRow = Omit<Book, 'coverUrl'> & { cover: Uint8Array | null };
+
+function coverType(bytes: Uint8Array) {
+  const header = Buffer.from(bytes.subarray(0, 12));
+  if (header.subarray(0, 8).toString('hex') === '89504e470d0a1a0a')
+    return 'image/png';
+  if (header.subarray(0, 3).toString('hex') === 'ffd8ff') return 'image/jpeg';
+  if (
+    header.toString('ascii', 0, 4) === 'RIFF' &&
+    header.toString('ascii', 8, 12) === 'WEBP'
+  )
+    return 'image/webp';
+}
+
+function toBook({ cover, ...book }: BookRow): Book {
+  const type = cover && coverType(cover);
+  return {
+    ...book,
+    coverUrl:
+      cover && type
+        ? `data:${type};base64,${Buffer.from(cover).toString('base64')}`
+        : null,
+  };
+}
 
 export function openDatabase(filename: string) {
   const db = new DatabaseSync(filename);
@@ -91,10 +119,9 @@ export function openDatabase(filename: string) {
     close: () => db.close(),
     listBooks: () =>
       db
-        .prepare(
-          'SELECT id, title, author, total_pages, current_page, status FROM books ORDER BY id DESC',
-        )
-        .all() as unknown as Book[],
+        .prepare(`SELECT ${bookColumns} FROM books ORDER BY id DESC`)
+        .all()
+        .map((row) => toBook(row as unknown as BookRow)),
     addBook: (input: NewBook) => {
       if (
         !input ||
@@ -111,16 +138,29 @@ export function openDatabase(filename: string) {
           'Перевір назву, автора та кількість сторінок (від 1 до 1 000 000).',
         );
       }
+      const { cover } = input;
+      if (
+        cover !== undefined &&
+        (!(cover instanceof Uint8Array) ||
+          cover.length > maxBookCoverBytes ||
+          !coverType(cover))
+      )
+        throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
       const result = db
         .prepare(
-          'INSERT INTO books (title, author, total_pages) VALUES (?, ?, ?)',
+          'INSERT INTO books (title, author, total_pages, cover) VALUES (?, ?, ?, ?)',
         )
-        .run(input.title.trim(), input.author.trim(), input.total_pages);
-      return db
-        .prepare(
-          'SELECT id, title, author, total_pages, current_page, status FROM books WHERE id = ?',
-        )
-        .get(result.lastInsertRowid) as unknown as Book;
+        .run(
+          input.title.trim(),
+          input.author.trim(),
+          input.total_pages,
+          cover ?? null,
+        );
+      return toBook(
+        db
+          .prepare(`SELECT ${bookColumns} FROM books WHERE id = ?`)
+          .get(result.lastInsertRowid) as unknown as BookRow,
+      );
     },
     listCalendarEntries: (start: number, end: number) => {
       if (

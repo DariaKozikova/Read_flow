@@ -107,6 +107,14 @@ export function LibraryPage() {
                 key={book.id}
                 className="min-w-0 rounded-[16px] border border-border bg-surface p-4"
               >
+                {book.coverUrl && (
+                  <img
+                    src={book.coverUrl}
+                    alt=""
+                    loading="lazy"
+                    className="mb-3 h-[126px] w-[84px] rounded-[8px] bg-canvas object-contain"
+                  />
+                )}
                 <h2 className="mb-1 wrap-anywhere text-[17px] font-semibold">
                   {book.title}
                 </h2>

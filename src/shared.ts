@@ -1,4 +1,6 @@
 export type BookStatus = 'planned' | 'reading' | 'paused' | 'finished';
+export const maxBookCoverBytes = 5 * 1024 * 1024;
+export const bookCoverTypes = ['image/jpeg', 'image/png', 'image/webp'];
 export interface Book {
   id: number;
   title: string;
@@ -6,11 +8,13 @@ export interface Book {
   total_pages: number;
   current_page: number;
   status: BookStatus;
+  coverUrl: string | null;
 }
 export interface NewBook {
   title: string;
   author: string;
   total_pages: number;
+  cover?: Uint8Array;
 }
 export interface CalendarEntry {
   id: number;

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const coverTypes = ['image/jpeg', 'image/png', 'image/webp'];
-const maxCoverSize = 5 * 1024 * 1024;
+import { bookCoverTypes, maxBookCoverBytes } from '../shared';
 
 export function BookCoverPicker() {
   const [file, setFile] = useState<File>();
@@ -27,7 +26,8 @@ export function BookCoverPicker() {
         Обкладинка (необов’язково)
         <input
           type="file"
-          accept={coverTypes.join(',')}
+          name="cover"
+          accept={bookCoverTypes.join(',')}
           aria-describedby="book-cover-hint"
           className="min-w-0 text-[13px]"
           onChange={(event) => {
@@ -40,8 +40,8 @@ export function BookCoverPicker() {
               return;
             }
             if (
-              !coverTypes.includes(selected.type) ||
-              selected.size > maxCoverSize
+              !bookCoverTypes.includes(selected.type) ||
+              selected.size > maxBookCoverBytes
             ) {
               input.value = '';
               setFile(undefined);
@@ -53,8 +53,7 @@ export function BookCoverPicker() {
         />
       </label>
       <p id="book-cover-hint" className="m-0 text-[12px]">
-        JPG, PNG або WebP до 5 МБ. Зображення доступне для попереднього
-        перегляду.
+        JPG, PNG або WebP до 5 МБ.
       </p>
       {error && (
         <p className="error m-0" role="alert">
