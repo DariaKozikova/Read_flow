@@ -103,6 +103,15 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
     else entriesByDay.set(day, [entry]);
   }
   const selectedEntries = entriesByDay.get(selected) ?? [];
+  const readMilliseconds = selectedEntries.reduce(
+    (total, entry) =>
+      entry.status === 'read'
+        ? total + Math.round(entry.minutes * 60_000)
+        : total,
+    0,
+  );
+  const readMinutes = Math.floor(readMilliseconds / 60_000);
+  const minutesLeft = Math.max(0, dailyGoal - readMinutes);
   const coversByBook = new Map(
     books?.map(({ id, coverUrl }) => [id, coverUrl]),
   );
@@ -299,6 +308,24 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
         <h2 className="mb-2 text-[17px] font-semibold first-letter:uppercase">
           {dateFormat.format(selected)}
         </h2>
+        {visibleEntries && !visibleEntries.failed && (
+          <div className="mb-4 grid gap-1.5 rounded-[8px] bg-soft px-3 py-2">
+            <p className="m-0 text-[13px] font-semibold text-ink">
+              Прочитано {readMinutes} хв із {dailyGoal} хв
+            </p>
+            <progress
+              className="h-2 w-full accent-accent"
+              aria-label="Прогрес до денної цілі читання"
+              max={dailyGoal}
+              value={Math.min(readMilliseconds / 60_000, dailyGoal)}
+            />
+            <p className="m-0 text-[12px] text-ink">
+              {minutesLeft === 0
+                ? 'Денну ціль виконано'
+                : `До денної цілі: ${minutesLeft} хв`}
+            </p>
+          </div>
+        )}
         {!visibleEntries ? (
           <p role="status" className="text-[13px]">
             Завантажуємо записи…
