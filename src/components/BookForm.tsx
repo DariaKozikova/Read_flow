@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import type { Book } from '../shared';
+import { BookCoverPicker } from './BookCoverPicker';
 
 export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [formVersion, setFormVersion] = useState(0);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,6 +26,7 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
         total_pages: Number(fields.get('totalPages')),
       });
       form.reset();
+      setFormVersion((version) => version + 1);
       onAdded(book);
     } catch {
       setError('Не вдалося зберегти книгу. Спробуй ще раз.');
@@ -65,7 +68,8 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
             required
           />
         </label>
-        <button className="primary-button min-[1000px]:w-auto min-[1000px]:justify-self-start">
+        <BookCoverPicker key={formVersion} />
+        <button className="primary-button min-[1000px]:col-span-full min-[1000px]:w-auto min-[1000px]:justify-self-start">
           {saving ? 'Зберігаємо…' : 'Зберегти книгу'}
         </button>
       </fieldset>
