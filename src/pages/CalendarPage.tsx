@@ -102,6 +102,9 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
     else entriesByDay.set(day, [entry]);
   }
   const selectedEntries = entriesByDay.get(selected) ?? [];
+  const coversByBook = new Map(
+    books?.map(({ id, coverUrl }) => [id, coverUrl]),
+  );
 
   function selectDay(day: number) {
     setSelected(day);
@@ -222,25 +225,48 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
             if (day < 1 || day > days)
               return <span key={index} aria-hidden="true" />;
             const timestamp = new Date(year, month, day).getTime();
-            const hasEntries = entriesByDay.has(timestamp);
+            const dayEntries = entriesByDay.get(timestamp);
+            const reading = dayEntries?.find(
+              ({ status }) => status === 'read' || status === 'reading',
+            );
+            const cover = reading && coversByBook.get(reading.bookId);
             return (
               <button
                 key={index}
                 type="button"
-                className="flex min-h-[42px] min-w-0 flex-col items-center justify-center gap-1 rounded-[8px] border border-solid border-transparent bg-transparent text-[13px] hover:bg-soft aria-[current=date]:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
+                className="flex min-h-[74px] min-w-0 flex-col items-center gap-1 rounded-[8px] border border-solid border-transparent bg-transparent px-0.5 py-1 text-[13px] hover:bg-soft aria-[current=date]:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
                 aria-label={
                   dateFormat.format(timestamp) +
-                  (hasEntries ? ', є записи' : '')
+                  (reading
+                    ? `, ${reading.bookTitle}`
+                    : dayEntries
+                      ? ', є записи'
+                      : '')
                 }
                 aria-current={timestamp === today ? 'date' : undefined}
                 aria-pressed={timestamp === selected}
                 onClick={() => selectDay(timestamp)}
               >
                 {day}
-                <span
-                  aria-hidden="true"
-                  className={`size-1 rounded-full ${hasEntries ? 'bg-current' : 'invisible'}`}
-                />
+                {cover ? (
+                  <img
+                    src={cover}
+                    alt=""
+                    className="h-10 w-7 max-w-full rounded-[3px] object-contain"
+                  />
+                ) : reading ? (
+                  <span
+                    aria-hidden="true"
+                    className="grid h-10 w-7 max-w-full place-items-center rounded-[3px] bg-surface text-accent"
+                  >
+                    ▤
+                  </span>
+                ) : dayEntries ? (
+                  <span
+                    aria-hidden="true"
+                    className="size-1 rounded-full bg-current"
+                  />
+                ) : null}
               </button>
             );
           })}

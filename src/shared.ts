@@ -18,6 +18,7 @@ export interface NewBook {
 }
 export interface CalendarEntry {
   id: number;
+  bookId: number;
   bookTitle: string;
   startsAt: number;
   minutes: number;

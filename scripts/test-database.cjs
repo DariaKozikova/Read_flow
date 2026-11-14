@@ -134,6 +134,11 @@ try {
   db = openDatabase(filename);
   assert.equal(db.listBooks()[0].coverUrl, null);
   assert.equal(db.listBooks()[1].coverUrl, savedCover.coverUrl);
+  assert.ok(
+    db
+      .listCalendarEntries(start, end)
+      .every((entry) => entry.bookId === bookId),
+  );
   assert.deepEqual(
     db
       .listCalendarEntries(start, end)

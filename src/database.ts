@@ -216,17 +216,17 @@ export function openDatabase(filename: string) {
         throw new Error('Некоректний діапазон календаря.');
       return db
         .prepare(
-          `SELECT id, bookTitle, startsAt, minutes, status FROM (
-             SELECT p.id AS id, b.title AS bookTitle, p.scheduled_at AS startsAt,
+          `SELECT id, bookId, bookTitle, startsAt, minutes, status FROM (
+             SELECT p.id AS id, p.book_id AS bookId, b.title AS bookTitle, p.scheduled_at AS startsAt,
                     p.duration_minutes AS minutes, p.status AS status
              FROM planned_sessions p JOIN books b ON b.id = p.book_id
              WHERE p.scheduled_at >= ? AND p.scheduled_at < ?
              UNION ALL
-             SELECT s.id, b.title, s.started_at, s.duration_ms / 60000.0, 'read'
+             SELECT s.id, s.book_id, b.title, s.started_at, s.duration_ms / 60000.0, 'read'
              FROM reading_sessions s JOIN books b ON b.id = s.book_id
              WHERE s.started_at >= ? AND s.started_at < ?
              UNION ALL
-             SELECT a.id, b.title, a.started_at, 0, 'reading'
+             SELECT a.id, a.book_id, b.title, a.started_at, 0, 'reading'
              FROM active_session a JOIN books b ON b.id = a.book_id
              WHERE a.started_at >= ? AND a.started_at < ?
            )
