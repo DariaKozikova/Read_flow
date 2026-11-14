@@ -16,6 +16,16 @@ type LibraryState =
 export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const [query, setQuery] = useState('');
+  const search = query.trim().toLocaleLowerCase('uk-UA');
+  const filteredBooks =
+    state.status === 'loaded'
+      ? state.books.filter(
+          ({ title, author }) =>
+            title.toLocaleLowerCase('uk-UA').includes(search) ||
+            author.toLocaleLowerCase('uk-UA').includes(search),
+        )
+      : [];
 
   useEffect(() => {
     let current = true;
@@ -36,14 +46,26 @@ export function LibraryPage() {
     <section className="flex-1 py-6" aria-label="Список книг">
       {state.status === 'loaded' && (
         <BookForm
-          onAdded={(book) =>
+          onAdded={(book) => {
+            setQuery('');
             setState((current) =>
               current.status === 'loaded'
                 ? { status: 'loaded', books: [book, ...current.books] }
                 : current,
-            )
-          }
+            );
+          }}
         />
+      )}
+      {state.status === 'loaded' && state.books.length > 0 && (
+        <label className="mb-4 grid max-w-[440px] gap-1 text-[13px]">
+          Пошук книг
+          <input
+            type="search"
+            placeholder="Назва або автор"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
       )}
       {state.status === 'loading' && <p role="status">Завантажуємо книги…</p>}
       {state.status === 'error' && (
@@ -71,9 +93,16 @@ export function LibraryPage() {
               Тут з’являться твої збережені книги.
             </p>
           </div>
+        ) : filteredBooks.length === 0 ? (
+          <p
+            role="status"
+            className="rounded-[16px] border border-border bg-surface p-4 text-[13px]"
+          >
+            Книг за цим запитом не знайдено.
+          </p>
         ) : (
           <ul className="m-0 grid list-none gap-3 p-0 min-[1000px]:grid-cols-2">
-            {state.books.map((book) => (
+            {filteredBooks.map((book) => (
               <li
                 key={book.id}
                 className="min-w-0 rounded-[16px] border border-border bg-surface p-4"
