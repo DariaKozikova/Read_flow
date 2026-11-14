@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AccountState, ProfileInput, Theme } from './shared';
 import { Sidebar } from './components/Sidebar';
 import { CalendarPage } from './pages/CalendarPage';
+import { LibraryPage } from './pages/LibraryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SignInPage } from './pages/SignInPage';
 import { pages, PlaceholderPage, type PageId } from './pages/PlaceholderPage';
@@ -105,6 +106,8 @@ export function App() {
             </header>
             {page === 'calendar' ? (
               <CalendarPage dailyGoal={account.profile.dailyGoalMinutes} />
+            ) : page === 'library' ? (
+              <LibraryPage />
             ) : (
               <PlaceholderPage page={page} />
             )}
