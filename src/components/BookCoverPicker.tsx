@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import { bookCoverTypes, maxBookCoverBytes } from '../shared';
 
-export function BookCoverPicker() {
+export function BookCoverPicker({
+  onSelection,
+}: {
+  onSelection?: (file?: File) => void;
+}) {
+  const hintId = useId();
   const [file, setFile] = useState<File>();
   const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +33,7 @@ export function BookCoverPicker() {
           type="file"
           name="cover"
           accept={bookCoverTypes.join(',')}
-          aria-describedby="book-cover-hint"
+          aria-describedby={hintId}
           className="min-w-0 text-[13px]"
           onChange={(event) => {
             const input = event.currentTarget;
@@ -37,6 +42,7 @@ export function BookCoverPicker() {
             setError('');
             if (!selected) {
               setFile(undefined);
+              onSelection?.();
               return;
             }
             if (
@@ -45,14 +51,16 @@ export function BookCoverPicker() {
             ) {
               input.value = '';
               setFile(undefined);
+              onSelection?.();
               setError('Вибери зображення JPG, PNG або WebP розміром до 5 МБ.');
               return;
             }
             setFile(selected);
+            onSelection?.(selected);
           }}
         />
       </label>
-      <p id="book-cover-hint" className="m-0 text-[12px]">
+      <p id={hintId} className="m-0 text-[12px]">
         JPG, PNG або WebP до 5 МБ.
       </p>
       {error && (

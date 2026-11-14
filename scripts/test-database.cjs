@@ -112,6 +112,21 @@ try {
   check.close();
   db = openDatabase(filename);
   assert.deepEqual(db.listBooks()[0], savedCover);
+  const previousBook = db.listBooks()[1];
+  assert.throws(() => db.updateBookCover(savedCover.id, Buffer.from('bad')));
+  assert.throws(() => db.updateBookCover(99999, null));
+  assert.deepEqual(db.updateBookCover(previousBook.id, coveredBook.cover), {
+    ...previousBook,
+    coverUrl: savedCover.coverUrl,
+  });
+  assert.deepEqual(db.updateBookCover(savedCover.id, null), {
+    ...savedCover,
+    coverUrl: null,
+  });
+  db.close();
+  db = openDatabase(filename);
+  assert.equal(db.listBooks()[0].coverUrl, null);
+  assert.equal(db.listBooks()[1].coverUrl, savedCover.coverUrl);
   assert.deepEqual(
     db
       .listCalendarEntries(start, end)

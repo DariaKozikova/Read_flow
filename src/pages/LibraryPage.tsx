@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BookCoverEditor } from '../components/BookCoverEditor';
 import { BookForm } from '../components/BookForm';
 import type { Book, BookStatus } from '../shared';
 
@@ -131,6 +132,21 @@ export function LibraryPage() {
                     {book.current_page} / {book.total_pages} стор.
                   </span>
                 </div>
+                <BookCoverEditor
+                  book={book}
+                  onUpdated={(updated) =>
+                    setState((current) =>
+                      current.status === 'loaded'
+                        ? {
+                            status: 'loaded',
+                            books: current.books.map((item) =>
+                              item.id === updated.id ? updated : item,
+                            ),
+                          }
+                        : current,
+                    )
+                  }
+                />
               </li>
             ))}
           </ul>

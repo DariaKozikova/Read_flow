@@ -36,6 +36,16 @@ function toBook({ cover, ...book }: BookRow): Book {
   };
 }
 
+function validateCover(cover: Uint8Array | null) {
+  if (
+    cover !== null &&
+    (!(cover instanceof Uint8Array) ||
+      cover.length > maxBookCoverBytes ||
+      !coverType(cover))
+  )
+    throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
+}
+
 export function openDatabase(filename: string) {
   const db = new DatabaseSync(filename);
   try {
@@ -139,13 +149,7 @@ export function openDatabase(filename: string) {
         );
       }
       const { cover } = input;
-      if (
-        cover !== undefined &&
-        (!(cover instanceof Uint8Array) ||
-          cover.length > maxBookCoverBytes ||
-          !coverType(cover))
-      )
-        throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
+      validateCover(cover ?? null);
       const result = db
         .prepare(
           'INSERT INTO books (title, author, total_pages, cover) VALUES (?, ?, ?, ?)',
@@ -161,6 +165,18 @@ export function openDatabase(filename: string) {
           .prepare(`SELECT ${bookColumns} FROM books WHERE id = ?`)
           .get(result.lastInsertRowid) as unknown as BookRow,
       );
+    },
+    updateBookCover: (id: number, cover: Uint8Array | null) => {
+      if (!Number.isSafeInteger(id) || id < 1)
+        throw new Error('Некоректна книга.');
+      validateCover(cover);
+      const row = db
+        .prepare(
+          `UPDATE books SET cover = ? WHERE id = ? RETURNING ${bookColumns}`,
+        )
+        .get(cover, id);
+      if (!row) throw new Error('Книгу не знайдено.');
+      return toBook(row as unknown as BookRow);
     },
     listCalendarEntries: (start: number, end: number) => {
       if (

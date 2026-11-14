@@ -65,6 +65,13 @@ else {
         verify(event);
         return database!.addBook(input);
       });
+      ipcMain.handle(
+        'books:update-cover',
+        (event, id: number, cover: Uint8Array | null) => {
+          verify(event);
+          return database!.updateBookCover(id, cover);
+        },
+      );
       ipcMain.handle('calendar:list', (event, start: number, end: number) => {
         verify(event);
         return database!.listCalendarEntries(start, end);

@@ -7,6 +7,8 @@ const api: ReadingFlowApi = {
   setTheme: (theme) => ipcRenderer.invoke('settings:theme', theme),
   listBooks: () => ipcRenderer.invoke('books:list'),
   addBook: (book: NewBook) => ipcRenderer.invoke('books:add', book),
+  updateBookCover: (id, cover) =>
+    ipcRenderer.invoke('books:update-cover', id, cover),
   listCalendarEntries: (start, end) =>
     ipcRenderer.invoke('calendar:list', start, end),
   addReadingPlan: (plan) => ipcRenderer.invoke('calendar:add-plan', plan),
