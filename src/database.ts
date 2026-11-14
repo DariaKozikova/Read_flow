@@ -1,6 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
 import schema from '../database/schema.sql?raw';
-import type { Book, CalendarEntry, NewBook, ReadingPlan } from './shared';
+import type {
+  ActiveReading,
+  Book,
+  CalendarEntry,
+  NewBook,
+  ReadingPlan,
+} from './shared';
 import {
   avatars,
   maxBookCoverBytes,
@@ -44,6 +50,20 @@ function validateCover(cover: Uint8Array | null) {
       !coverType(cover))
   )
     throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
+}
+
+function validateReadingTime(entry: ReadingPlan) {
+  if (
+    !entry ||
+    !Number.isSafeInteger(entry.bookId) ||
+    entry.bookId < 1 ||
+    !Number.isSafeInteger(entry.startsAt) ||
+    Math.abs(entry.startsAt) > 8_640_000_000_000_000 ||
+    !Number.isInteger(entry.minutes) ||
+    entry.minutes < 1 ||
+    entry.minutes > 1440
+  )
+    throw new Error('Перевір книгу, час початку та тривалість читання.');
 }
 
 export function openDatabase(filename: string) {
@@ -96,6 +116,15 @@ export function openDatabase(filename: string) {
       theme: db.prepare('SELECT theme FROM settings WHERE id = 1').get()!
         .theme as Theme,
     };
+  }
+  function getActiveReading() {
+    return (
+      (db
+        .prepare(
+          'SELECT book_id AS bookId, start_page AS startPage FROM active_session WHERE id = 1',
+        )
+        .get() as ActiveReading | undefined) ?? null
+    );
   }
   return {
     getAccount,
@@ -196,26 +225,115 @@ export function openDatabase(filename: string) {
              SELECT s.id, b.title, s.started_at, s.duration_ms / 60000.0, 'read'
              FROM reading_sessions s JOIN books b ON b.id = s.book_id
              WHERE s.started_at >= ? AND s.started_at < ?
+             UNION ALL
+             SELECT a.id, b.title, a.started_at, 0, 'reading'
+             FROM active_session a JOIN books b ON b.id = a.book_id
+             WHERE a.started_at >= ? AND a.started_at < ?
            )
            ORDER BY startsAt, status, id`,
         )
-        .all(start, end, start, end) as unknown as CalendarEntry[];
+        .all(start, end, start, end, start, end) as unknown as CalendarEntry[];
+    },
+    getActiveReading,
+    startReading: (bookId: number, startPage: number): ActiveReading => {
+      if (
+        !Number.isSafeInteger(bookId) ||
+        !Number.isSafeInteger(startPage) ||
+        startPage < 1
+      )
+        throw new Error('Перевір початкову сторінку.');
+      const now = Date.now();
+      const result = db
+        .prepare(
+          `INSERT INTO active_session (id, book_id, state, started_at, start_page, running_since, updated_at)
+         SELECT 1, id, 'reading', ?, ?, ?, ? FROM books
+         WHERE id = ? AND total_pages >= ? AND NOT EXISTS (SELECT 1 FROM active_session)`,
+        )
+        .run(now, startPage, now, now, bookId, startPage);
+      if (result.changes !== 1)
+        throw new Error('Не вдалося розпочати читання.');
+      return { bookId, startPage };
+    },
+    finishReading: (endPage: number) => {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const session = db
+          .prepare(
+            `SELECT a.book_id, a.start_page, a.started_at, a.running_since, a.updated_at,
+                  a.accumulated_ms, b.total_pages
+           FROM active_session a JOIN books b ON b.id = a.book_id WHERE a.id = 1`,
+          )
+          .get() as
+          | {
+              book_id: number;
+              start_page: number;
+              started_at: number;
+              running_since: number | null;
+              updated_at: number;
+              accumulated_ms: number;
+              total_pages: number;
+            }
+          | undefined;
+        if (
+          !session ||
+          !Number.isSafeInteger(endPage) ||
+          endPage < session.start_page ||
+          endPage > session.total_pages
+        )
+          throw new Error('Перевір кінцеву сторінку.');
+        const end = Math.max(Date.now(), session.updated_at);
+        const duration = Math.min(
+          end - session.started_at,
+          session.accumulated_ms +
+            (session.running_since === null ? 0 : end - session.running_since),
+        );
+        db.prepare(
+          'INSERT INTO reading_sessions (book_id, started_at, ended_at, duration_ms, start_page, end_page) VALUES (?, ?, ?, ?, ?, ?)',
+        ).run(
+          session.book_id,
+          session.started_at,
+          end,
+          duration,
+          session.start_page,
+          endPage,
+        );
+        const book = toBook(
+          db
+            .prepare(
+              `UPDATE books SET current_page = ?, status = ? WHERE id = ? RETURNING ${bookColumns}`,
+            )
+            .get(
+              endPage,
+              endPage === session.total_pages ? 'finished' : 'reading',
+              session.book_id,
+            ) as unknown as BookRow,
+        );
+        db.prepare('DELETE FROM active_session WHERE id = 1').run();
+        db.exec('COMMIT');
+        return book;
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
     },
     addReadingPlan: (plan: ReadingPlan) => {
-      if (
-        !plan ||
-        !Number.isSafeInteger(plan.bookId) ||
-        plan.bookId < 1 ||
-        !Number.isSafeInteger(plan.startsAt) ||
-        Math.abs(plan.startsAt) > 8_640_000_000_000_000 ||
-        !Number.isInteger(plan.minutes) ||
-        plan.minutes < 1 ||
-        plan.minutes > 1440
-      )
-        throw new Error('Перевір книгу, час початку та тривалість читання.');
+      validateReadingTime(plan);
       db.prepare(
         'INSERT INTO planned_sessions (book_id, scheduled_at, duration_minutes) VALUES (?, ?, ?)',
       ).run(plan.bookId, plan.startsAt, plan.minutes);
+    },
+    logReadingSession: (session: ReadingPlan) => {
+      validateReadingTime(session);
+      const duration = session.minutes * 60_000;
+      const end = session.startsAt + duration;
+      if (end > Date.now()) throw new Error('Сесія читання ще не завершилася.');
+      const result = db
+        .prepare(
+          `INSERT INTO reading_sessions (book_id, started_at, ended_at, duration_ms, start_page, end_page)
+           SELECT id, ?, ?, ?, current_page, current_page FROM books WHERE id = ?`,
+        )
+        .run(session.startsAt, end, duration, session.bookId);
+      if (result.changes !== 1) throw new Error('Книгу не знайдено.');
     },
     info: () => ({
       path: filename,

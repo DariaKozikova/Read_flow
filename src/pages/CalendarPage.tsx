@@ -16,6 +16,7 @@ const statuses = {
   completed: 'Виконано',
   cancelled: 'Скасовано',
   read: 'Прочитано',
+  reading: 'Читання триває',
 } satisfies Record<CalendarEntry['status'], string>;
 const control =
   'rounded-[8px] border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
@@ -40,6 +41,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
   const [booksFailed, setBooksFailed] = useState(false);
   const [request, setRequest] = useState(0);
   const [bookId, setBookId] = useState('');
+  const [mode, setMode] = useState<'plan' | 'session'>('plan');
   const [time, setTime] = useState('18:00');
   const [minutes, setMinutes] = useState(String(dailyGoal));
   const [saving, setSaving] = useState(false);
@@ -110,7 +112,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
     selectDay(new Date(year, month + delta, 1).getTime());
   }
 
-  async function savePlan(event: FormEvent<HTMLFormElement>) {
+  async function saveEntry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving) return;
     const [hours, minute] = time.split(':').map(Number);
@@ -124,24 +126,38 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
       });
       return;
     }
+    const entry = {
+      bookId: Number(bookId),
+      startsAt: start.getTime(),
+      minutes: Number(minutes),
+    };
+    if (
+      mode === 'session' &&
+      entry.startsAt + entry.minutes * 60_000 > Date.now()
+    ) {
+      setSaveResult({
+        day: selected,
+        message: 'Вибери час і тривалість уже завершеного читання.',
+        failed: true,
+      });
+      return;
+    }
     setSaving(true);
     setSaveResult(undefined);
     try {
-      await window.api.addReadingPlan({
-        bookId: Number(bookId),
-        startsAt: start.getTime(),
-        minutes: Number(minutes),
-      });
+      if (mode === 'session') await window.api.logReadingSession(entry);
+      else await window.api.addReadingPlan(entry);
       setRequest((value) => value + 1);
       setSaveResult({
         day: selected,
-        message: 'Читання заплановано.',
+        message:
+          mode === 'session' ? 'Читання записано.' : 'Читання заплановано.',
         failed: false,
       });
     } catch {
       setSaveResult({
         day: selected,
-        message: 'Не вдалося зберегти план. Спробуй ще раз.',
+        message: 'Не вдалося зберегти запис. Спробуй ще раз.',
         failed: true,
       });
     } finally {
@@ -257,7 +273,8 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                 </strong>
                 <span className="text-[11px] text-muted">
                   {timeFormat.format(entry.startsAt)} ·{' '}
-                  {minutesFormat.format(entry.minutes)} хв ·{' '}
+                  {entry.status !== 'reading' &&
+                    `${minutesFormat.format(entry.minutes)} хв · `}
                   {statuses[entry.status]}
                 </span>
               </li>
@@ -274,9 +291,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
           </button>
         )}
         <div className="mt-4 border-t border-border pt-4">
-          <h3 className="m-0 mb-2 text-[15px] font-semibold">
-            Запланувати читання
-          </h3>
+          <h3 className="m-0 mb-2 text-[15px] font-semibold">Додати запис</h3>
           {booksFailed ? (
             <p className="m-0 text-[13px]" role="alert">
               Не вдалося завантажити книги.
@@ -287,11 +302,45 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
             </p>
           ) : books.length === 0 ? (
             <p className="m-0 text-[13px]">
-              Для планування потрібна книга в бібліотеці.
+              Для запису потрібна книга в бібліотеці.
             </p>
           ) : (
-            <form onSubmit={savePlan}>
+            <form onSubmit={saveEntry}>
               <fieldset disabled={saving} className="grid gap-3">
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  aria-label="Тип запису"
+                >
+                  <button
+                    type="button"
+                    className={
+                      control +
+                      ' aria-pressed:bg-soft aria-pressed:font-semibold'
+                    }
+                    aria-pressed={mode === 'plan'}
+                    onClick={() => {
+                      setMode('plan');
+                      setSaveResult(undefined);
+                    }}
+                  >
+                    Запланувати
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      control +
+                      ' aria-pressed:bg-soft aria-pressed:font-semibold'
+                    }
+                    aria-pressed={mode === 'session'}
+                    onClick={() => {
+                      setMode('session');
+                      setSaveResult(undefined);
+                    }}
+                  >
+                    Записати прочитане
+                  </button>
+                </div>
                 <label className="grid gap-1 text-[12px]">
                   Книга
                   <select
@@ -310,7 +359,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="grid min-w-0 gap-1 text-[12px]">
-                    Час
+                    Час початку
                     <input
                       className="min-w-0 p-2"
                       type="time"

@@ -49,6 +49,21 @@ else {
         verify(event);
         return database!.listBooks();
       });
+      ipcMain.handle('reading:active', (event) => {
+        verify(event);
+        return database!.getActiveReading();
+      });
+      ipcMain.handle(
+        'reading:start',
+        (event, bookId: number, startPage: number) => {
+          verify(event);
+          return database!.startReading(bookId, startPage);
+        },
+      );
+      ipcMain.handle('reading:finish', (event, endPage: number) => {
+        verify(event);
+        return database!.finishReading(endPage);
+      });
       ipcMain.handle('account:get', (event) => {
         verify(event);
         return database!.getAccount();
@@ -79,6 +94,10 @@ else {
       ipcMain.handle('calendar:add-plan', (event, plan: ReadingPlan) => {
         verify(event);
         database!.addReadingPlan(plan);
+      });
+      ipcMain.handle('calendar:log-session', (event, session: ReadingPlan) => {
+        verify(event);
+        database!.logReadingSession(session);
       });
       ipcMain.handle('database:info', (event) => {
         verify(event);

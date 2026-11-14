@@ -21,7 +21,11 @@ export interface CalendarEntry {
   bookTitle: string;
   startsAt: number;
   minutes: number;
-  status: 'planned' | 'completed' | 'cancelled' | 'read';
+  status: 'planned' | 'completed' | 'cancelled' | 'read' | 'reading';
+}
+export interface ActiveReading {
+  bookId: number;
+  startPage: number;
 }
 export interface ReadingPlan {
   bookId: number;
@@ -37,6 +41,10 @@ export interface ReadingFlowApi {
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
   addReadingPlan: (plan: ReadingPlan) => Promise<void>;
+  logReadingSession: (session: ReadingPlan) => Promise<void>;
+  getActiveReading: () => Promise<ActiveReading | null>;
+  startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
+  finishReading: (endPage: number) => Promise<Book>;
   databaseInfo: () => Promise<{ path: string; tables: number }>;
 }
 export type Theme = 'light' | 'dark' | 'system';

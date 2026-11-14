@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { BookCoverEditor } from '../components/BookCoverEditor';
 import { BookForm } from '../components/BookForm';
-import type { Book, BookStatus } from '../shared';
+import type { ActiveReading, Book, BookStatus } from '../shared';
 
 const statusLabels: Record<BookStatus, string> = {
   planned: 'У планах',
@@ -18,11 +18,16 @@ export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState('');
+  const [active, setActive] = useState<ActiveReading | null>(null);
+  const [readingBook, setReadingBook] = useState<number>();
+  const [readingBusy, setReadingBusy] = useState(false);
+  const [readingError, setReadingError] = useState('');
   const search = query.trim().toLocaleLowerCase('uk-UA');
   const filteredBooks =
     state.status === 'loaded'
       ? state.books.filter(
-          ({ title, author }) =>
+          ({ id, title, author }) =>
+            id === readingBook ||
             title.toLocaleLowerCase('uk-UA').includes(search) ||
             author.toLocaleLowerCase('uk-UA').includes(search),
         )
@@ -30,10 +35,13 @@ export function LibraryPage() {
 
   useEffect(() => {
     let current = true;
-    window.api
-      .listBooks()
-      .then((books) => {
-        if (current) setState({ status: 'loaded', books });
+    Promise.all([window.api.listBooks(), window.api.getActiveReading()])
+      .then(([books, session]) => {
+        if (current) {
+          setState({ status: 'loaded', books });
+          setActive(session);
+          setReadingBook(session?.bookId);
+        }
       })
       .catch(() => {
         if (current) setState({ status: 'error' });
@@ -42,6 +50,44 @@ export function LibraryPage() {
       current = false;
     };
   }, [attempt]);
+
+  function updateBook(updated: Book) {
+    setState((current) =>
+      current.status === 'loaded'
+        ? {
+            status: 'loaded',
+            books: current.books.map((item) =>
+              item.id === updated.id ? updated : item,
+            ),
+          }
+        : current,
+    );
+  }
+
+  async function saveReading(
+    event: FormEvent<HTMLFormElement>,
+    bookId: number,
+  ) {
+    event.preventDefault();
+    if (readingBusy) return;
+    const page = Number(new FormData(event.currentTarget).get('page'));
+    setReadingError('');
+    setReadingBusy(true);
+    try {
+      if (active) {
+        updateBook(await window.api.finishReading(page));
+        setActive(null);
+        setReadingBook(undefined);
+      } else {
+        setActive(await window.api.startReading(bookId, page));
+        setQuery('');
+      }
+    } catch {
+      setReadingError('Не вдалося зберегти сесію. Спробуй ще раз.');
+    } finally {
+      setReadingBusy(false);
+    }
+  }
 
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
@@ -126,27 +172,66 @@ export function LibraryPage() {
                 )}
                 <div className="flex flex-wrap items-center gap-2 text-[12px]">
                   <span className="rounded-full bg-soft px-2 py-1 font-medium text-accent">
-                    {statusLabels[book.status]}
+                    {active?.bookId === book.id
+                      ? 'Читаю зараз'
+                      : statusLabels[book.status]}
                   </span>
                   <span className="text-muted">
                     {book.current_page} / {book.total_pages} стор.
                   </span>
                 </div>
-                <BookCoverEditor
-                  book={book}
-                  onUpdated={(updated) =>
-                    setState((current) =>
-                      current.status === 'loaded'
-                        ? {
-                            status: 'loaded',
-                            books: current.books.map((item) =>
-                              item.id === updated.id ? updated : item,
-                            ),
-                          }
-                        : current,
-                    )
-                  }
-                />
+                <BookCoverEditor book={book} onUpdated={updateBook} />
+                {readingBook === book.id ? (
+                  <form
+                    key={active ? 'finish' : 'start'}
+                    className="mt-3 grid gap-2"
+                    onSubmit={(event) => void saveReading(event, book.id)}
+                  >
+                    <label className="grid gap-1 text-[13px]">
+                      {active ? 'Кінцева сторінка' : 'Початкова сторінка'}
+                      <input
+                        name="page"
+                        type="number"
+                        min={active?.startPage ?? 1}
+                        max={book.total_pages}
+                        defaultValue={
+                          active?.startPage ?? Math.max(1, book.current_page)
+                        }
+                        required
+                        disabled={readingBusy}
+                      />
+                    </label>
+                    <button className="primary-button" disabled={readingBusy}>
+                      {active ? 'Завершити читання' : 'Почати читання'}
+                    </button>
+                    {!active && (
+                      <button
+                        type="button"
+                        disabled={readingBusy}
+                        onClick={() => setReadingBook(undefined)}
+                      >
+                        Скасувати
+                      </button>
+                    )}
+                    {readingError && (
+                      <p className="error m-0" role="alert">
+                        {readingError}
+                      </p>
+                    )}
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    className="primary-button mt-3"
+                    disabled={!!active || readingBusy}
+                    onClick={() => {
+                      setReadingError('');
+                      setReadingBook(book.id);
+                    }}
+                  >
+                    Читати
+                  </button>
+                )}
               </li>
             ))}
           </ul>

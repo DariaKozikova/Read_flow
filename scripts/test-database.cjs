@@ -96,6 +96,13 @@ try {
   );
   db.addReadingPlan({ bookId, startsAt: start, minutes: 45 });
   db.addReadingPlan({ bookId, startsAt: end, minutes: 30 });
+  assert.throws(() =>
+    db.logReadingSession({ bookId, startsAt: Date.now(), minutes: 20 }),
+  );
+  assert.throws(() =>
+    db.logReadingSession({ bookId: 99999, startsAt: start, minutes: 20 }),
+  );
+  db.logReadingSession({ bookId, startsAt: start + 180_000, minutes: 20 });
   db.close();
   db = undefined;
   const check = new DatabaseSync(filename);
@@ -149,6 +156,12 @@ try {
         minutes: 1.5,
         status: 'read',
       },
+      {
+        bookTitle: 'Наявна книга',
+        startsAt: start + 180_000,
+        minutes: 20,
+        status: 'read',
+      },
     ],
   );
   const fresh = openDatabase(':memory:');
@@ -168,6 +181,25 @@ try {
     fresh.addBook({ title: 'Книга', author: '', total_pages: 0 }),
   );
   assert.deepEqual(fresh.listBooks(), [book]);
+  const beforeReading = Date.now();
+  assert.throws(() => fresh.startReading(book.id, 0));
+  assert.deepEqual(fresh.startReading(book.id, 5), {
+    bookId: book.id,
+    startPage: 5,
+  });
+  assert.throws(() => fresh.startReading(book.id, 6));
+  assert.throws(() => fresh.finishReading(4));
+  assert.equal(fresh.getActiveReading().startPage, 5);
+  assert.equal(
+    fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
+    'reading',
+  );
+  assert.equal(fresh.finishReading(12).current_page, 12);
+  assert.equal(fresh.getActiveReading(), null);
+  assert.equal(
+    fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
+    'read',
+  );
   fresh.close();
   console.log(
     'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',
