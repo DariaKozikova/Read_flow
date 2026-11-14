@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { BookCoverEditor } from '../components/BookCoverEditor';
+import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
 import type { ActiveReading, Book, BookStatus } from '../shared';
 
@@ -187,6 +188,7 @@ export function LibraryPage() {
                     className="mt-3 grid gap-2"
                     onSubmit={(event) => void saveReading(event, book.id)}
                   >
+                    {active && <ReadingTimer session={active} />}
                     <label className="grid gap-1 text-[13px]">
                       {active ? 'Кінцева сторінка' : 'Початкова сторінка'}
                       <input

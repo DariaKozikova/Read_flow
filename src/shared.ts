@@ -27,6 +27,8 @@ export interface CalendarEntry {
 export interface ActiveReading {
   bookId: number;
   startPage: number;
+  accumulatedMs: number;
+  runningSince: number | null;
 }
 export interface ReadingPlan {
   bookId: number;
@@ -42,7 +44,6 @@ export interface ReadingFlowApi {
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
   addReadingPlan: (plan: ReadingPlan) => Promise<void>;
-  logReadingSession: (session: ReadingPlan) => Promise<void>;
   getActiveReading: () => Promise<ActiveReading | null>;
   startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
   finishReading: (endPage: number) => Promise<Book>;

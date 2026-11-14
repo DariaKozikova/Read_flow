@@ -96,13 +96,6 @@ try {
   );
   db.addReadingPlan({ bookId, startsAt: start, minutes: 45 });
   db.addReadingPlan({ bookId, startsAt: end, minutes: 30 });
-  assert.throws(() =>
-    db.logReadingSession({ bookId, startsAt: Date.now(), minutes: 20 }),
-  );
-  assert.throws(() =>
-    db.logReadingSession({ bookId: 99999, startsAt: start, minutes: 20 }),
-  );
-  db.logReadingSession({ bookId, startsAt: start + 180_000, minutes: 20 });
   db.close();
   db = undefined;
   const check = new DatabaseSync(filename);
@@ -161,12 +154,6 @@ try {
         minutes: 1.5,
         status: 'read',
       },
-      {
-        bookTitle: 'Наявна книга',
-        startsAt: start + 180_000,
-        minutes: 20,
-        status: 'read',
-      },
     ],
   );
   const fresh = openDatabase(':memory:');
@@ -188,10 +175,14 @@ try {
   assert.deepEqual(fresh.listBooks(), [book]);
   const beforeReading = Date.now();
   assert.throws(() => fresh.startReading(book.id, 0));
-  assert.deepEqual(fresh.startReading(book.id, 5), {
+  const session = fresh.startReading(book.id, 5);
+  assert.deepEqual(session, {
     bookId: book.id,
     startPage: 5,
+    accumulatedMs: 0,
+    runningSince: session.runningSince,
   });
+  assert.ok(session.runningSince >= beforeReading);
   assert.throws(() => fresh.startReading(book.id, 6));
   assert.throws(() => fresh.finishReading(4));
   assert.equal(fresh.getActiveReading().startPage, 5);
@@ -199,11 +190,21 @@ try {
     fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
     'reading',
   );
-  assert.equal(fresh.finishReading(12).current_page, 12);
+  const realNow = Date.now;
+  Date.now = () => session.runningSince + 90_000;
+  try {
+    assert.equal(fresh.finishReading(12).current_page, 12);
+  } finally {
+    Date.now = realNow;
+  }
   assert.equal(fresh.getActiveReading(), null);
   assert.equal(
     fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
     'read',
+  );
+  assert.equal(
+    fresh.listCalendarEntries(beforeReading, realNow() + 1)[0].minutes,
+    1.5,
   );
   fresh.close();
   console.log(

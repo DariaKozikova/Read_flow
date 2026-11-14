@@ -16,8 +16,6 @@ const api: ReadingFlowApi = {
   listCalendarEntries: (start, end) =>
     ipcRenderer.invoke('calendar:list', start, end),
   addReadingPlan: (plan) => ipcRenderer.invoke('calendar:add-plan', plan),
-  logReadingSession: (session) =>
-    ipcRenderer.invoke('calendar:log-session', session),
   databaseInfo: () => ipcRenderer.invoke('database:info'),
 };
 contextBridge.exposeInMainWorld('api', api);

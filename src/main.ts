@@ -95,10 +95,6 @@ else {
         verify(event);
         database!.addReadingPlan(plan);
       });
-      ipcMain.handle('calendar:log-session', (event, session: ReadingPlan) => {
-        verify(event);
-        database!.logReadingSession(session);
-      });
       ipcMain.handle('database:info', (event) => {
         verify(event);
         return database!.info();

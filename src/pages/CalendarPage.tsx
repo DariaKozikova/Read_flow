@@ -42,7 +42,6 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
   const [booksFailed, setBooksFailed] = useState(false);
   const [request, setRequest] = useState(0);
   const [bookId, setBookId] = useState('');
-  const [mode, setMode] = useState<'plan' | 'session'>('plan');
   const [time, setTime] = useState('18:00');
   const [minutes, setMinutes] = useState(String(dailyGoal));
   const [saving, setSaving] = useState(false);
@@ -144,27 +143,14 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
       startsAt: start.getTime(),
       minutes: Number(minutes),
     };
-    if (
-      mode === 'session' &&
-      entry.startsAt + entry.minutes * 60_000 > Date.now()
-    ) {
-      setSaveResult({
-        day: selected,
-        message: 'Вибери час і тривалість уже завершеного читання.',
-        failed: true,
-      });
-      return;
-    }
     setSaving(true);
     setSaveResult(undefined);
     try {
-      if (mode === 'session') await window.api.logReadingSession(entry);
-      else await window.api.addReadingPlan(entry);
+      await window.api.addReadingPlan(entry);
       setRequest((value) => value + 1);
       setSaveResult({
         day: selected,
-        message:
-          mode === 'session' ? 'Читання записано.' : 'Читання заплановано.',
+        message: 'Читання заплановано.',
         failed: false,
       });
     } catch {
@@ -366,7 +352,9 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
           </button>
         )}
         <div className="mt-4 border-t border-border pt-4">
-          <h3 className="m-0 mb-2 text-[15px] font-semibold">Додати запис</h3>
+          <h3 className="m-0 mb-2 text-[15px] font-semibold">
+            Запланувати читання
+          </h3>
           {booksFailed ? (
             <p className="m-0 text-[13px]" role="alert">
               Не вдалося завантажити книги.
@@ -377,45 +365,11 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
             </p>
           ) : books.length === 0 ? (
             <p className="m-0 text-[13px]">
-              Для запису потрібна книга в бібліотеці.
+              Для планування потрібна книга в бібліотеці.
             </p>
           ) : (
             <form onSubmit={saveEntry}>
               <fieldset disabled={saving} className="grid gap-3">
-                <div
-                  className="flex flex-wrap gap-2"
-                  role="group"
-                  aria-label="Тип запису"
-                >
-                  <button
-                    type="button"
-                    className={
-                      control +
-                      ' aria-pressed:bg-soft aria-pressed:font-semibold'
-                    }
-                    aria-pressed={mode === 'plan'}
-                    onClick={() => {
-                      setMode('plan');
-                      setSaveResult(undefined);
-                    }}
-                  >
-                    Запланувати
-                  </button>
-                  <button
-                    type="button"
-                    className={
-                      control +
-                      ' aria-pressed:bg-soft aria-pressed:font-semibold'
-                    }
-                    aria-pressed={mode === 'session'}
-                    onClick={() => {
-                      setMode('session');
-                      setSaveResult(undefined);
-                    }}
-                  >
-                    Записати прочитане
-                  </button>
-                </div>
                 <label className="grid gap-1 text-[12px]">
                   Книга
                   <select

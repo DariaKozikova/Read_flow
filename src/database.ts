@@ -121,7 +121,7 @@ export function openDatabase(filename: string) {
     return (
       (db
         .prepare(
-          'SELECT book_id AS bookId, start_page AS startPage FROM active_session WHERE id = 1',
+          'SELECT book_id AS bookId, start_page AS startPage, accumulated_ms AS accumulatedMs, running_since AS runningSince FROM active_session WHERE id = 1',
         )
         .get() as ActiveReading | undefined) ?? null
     );
@@ -252,7 +252,7 @@ export function openDatabase(filename: string) {
         .run(now, startPage, now, now, bookId, startPage);
       if (result.changes !== 1)
         throw new Error('Не вдалося розпочати читання.');
-      return { bookId, startPage };
+      return { bookId, startPage, accumulatedMs: 0, runningSince: now };
     },
     finishReading: (endPage: number) => {
       db.exec('BEGIN IMMEDIATE');
@@ -321,19 +321,6 @@ export function openDatabase(filename: string) {
       db.prepare(
         'INSERT INTO planned_sessions (book_id, scheduled_at, duration_minutes) VALUES (?, ?, ?)',
       ).run(plan.bookId, plan.startsAt, plan.minutes);
-    },
-    logReadingSession: (session: ReadingPlan) => {
-      validateReadingTime(session);
-      const duration = session.minutes * 60_000;
-      const end = session.startsAt + duration;
-      if (end > Date.now()) throw new Error('Сесія читання ще не завершилася.');
-      const result = db
-        .prepare(
-          `INSERT INTO reading_sessions (book_id, started_at, ended_at, duration_ms, start_page, end_page)
-           SELECT id, ?, ?, ?, current_page, current_page FROM books WHERE id = ?`,
-        )
-        .run(session.startsAt, end, duration, session.bookId);
-      if (result.changes !== 1) throw new Error('Книгу не знайдено.');
     },
     info: () => ({
       path: filename,
