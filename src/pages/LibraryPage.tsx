@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BookForm } from '../components/BookForm';
 import type { Book, BookStatus } from '../shared';
 
 const statusLabels: Record<BookStatus, string> = {
@@ -33,6 +34,17 @@ export function LibraryPage() {
 
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
+      {state.status === 'loaded' && (
+        <BookForm
+          onAdded={(book) =>
+            setState((current) =>
+              current.status === 'loaded'
+                ? { status: 'loaded', books: [book, ...current.books] }
+                : current,
+            )
+          }
+        />
+      )}
       {state.status === 'loading' && <p role="status">Завантажуємо книги…</p>}
       {state.status === 'error' && (
         <>
