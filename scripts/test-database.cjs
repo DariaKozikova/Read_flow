@@ -70,6 +70,18 @@ try {
   assert.equal(db.listBooks().length, 1);
   db.setTheme('light');
   assert.equal(db.getAccount().theme, 'light');
+  const bookId = db.listBooks()[0].id;
+  const start = Date.UTC(2026, 10, 1);
+  const end = Date.UTC(2026, 11, 1);
+  assert.throws(() => db.listCalendarEntries(end, start));
+  assert.throws(() =>
+    db.addReadingPlan({ bookId, startsAt: start, minutes: 0 }),
+  );
+  assert.throws(() =>
+    db.addReadingPlan({ bookId: bookId + 1000, startsAt: start, minutes: 30 }),
+  );
+  db.addReadingPlan({ bookId, startsAt: start, minutes: 45 });
+  db.addReadingPlan({ bookId, startsAt: end, minutes: 30 });
   db.close();
   db = undefined;
   const check = new DatabaseSync(filename);
@@ -78,7 +90,37 @@ try {
     check.prepare('PRAGMA integrity_check').get().integrity_check,
     'ok',
   );
+  check
+    .prepare(
+      'INSERT INTO reading_sessions (book_id, started_at, ended_at, duration_ms, start_page, end_page) VALUES (?, ?, ?, ?, 0, 5)',
+    )
+    .run(bookId, start + 60_000, start + 150_000, 90_000);
   check.close();
+  db = openDatabase(filename);
+  assert.deepEqual(
+    db
+      .listCalendarEntries(start, end)
+      .map(({ bookTitle, startsAt, minutes, status }) => ({
+        bookTitle,
+        startsAt,
+        minutes,
+        status,
+      })),
+    [
+      {
+        bookTitle: 'Наявна книга',
+        startsAt: start,
+        minutes: 45,
+        status: 'planned',
+      },
+      {
+        bookTitle: 'Наявна книга',
+        startsAt: start + 60_000,
+        minutes: 1.5,
+        status: 'read',
+      },
+    ],
+  );
   const fresh = openDatabase(':memory:');
   assert.equal(fresh.getAccount().profile, null);
   assert.equal(fresh.info().tables, 7);
@@ -98,7 +140,7 @@ try {
   assert.deepEqual(fresh.listBooks(), [book]);
   fresh.close();
   console.log(
-    'PASS: migration, profile validation and persistence, themes, and book creation.',
+    'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',
   );
 } finally {
   db?.close();

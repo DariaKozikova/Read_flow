@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { openDatabase } from './database';
-import type { NewBook, ProfileInput, Theme } from './shared';
+import type { NewBook, ProfileInput, ReadingPlan, Theme } from './shared';
 
 let database: ReturnType<typeof openDatabase> | undefined;
 function createWindow() {
@@ -64,6 +64,14 @@ else {
       ipcMain.handle('books:add', (event, input: NewBook) => {
         verify(event);
         return database!.addBook(input);
+      });
+      ipcMain.handle('calendar:list', (event, start: number, end: number) => {
+        verify(event);
+        return database!.listCalendarEntries(start, end);
+      });
+      ipcMain.handle('calendar:add-plan', (event, plan: ReadingPlan) => {
+        verify(event);
+        database!.addReadingPlan(plan);
       });
       ipcMain.handle('database:info', (event) => {
         verify(event);

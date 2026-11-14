@@ -12,12 +12,26 @@ export interface NewBook {
   author: string;
   total_pages: number;
 }
+export interface CalendarEntry {
+  id: number;
+  bookTitle: string;
+  startsAt: number;
+  minutes: number;
+  status: 'planned' | 'completed' | 'cancelled' | 'read';
+}
+export interface ReadingPlan {
+  bookId: number;
+  startsAt: number;
+  minutes: number;
+}
 export interface ReadingFlowApi {
   getAccount: () => Promise<AccountState>;
   createProfile: (input: ProfileInput) => Promise<AccountState>;
   setTheme: (theme: Theme) => Promise<void>;
   listBooks: () => Promise<Book[]>;
   addBook: (book: NewBook) => Promise<Book>;
+  listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
+  addReadingPlan: (plan: ReadingPlan) => Promise<void>;
   databaseInfo: () => Promise<{ path: string; tables: number }>;
 }
 export type Theme = 'light' | 'dark' | 'system';

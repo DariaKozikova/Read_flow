@@ -7,6 +7,9 @@ const api: ReadingFlowApi = {
   setTheme: (theme) => ipcRenderer.invoke('settings:theme', theme),
   listBooks: () => ipcRenderer.invoke('books:list'),
   addBook: (book: NewBook) => ipcRenderer.invoke('books:add', book),
+  listCalendarEntries: (start, end) =>
+    ipcRenderer.invoke('calendar:list', start, end),
+  addReadingPlan: (plan) => ipcRenderer.invoke('calendar:add-plan', plan),
   databaseInfo: () => ipcRenderer.invoke('database:info'),
 };
 contextBridge.exposeInMainWorld('api', api);

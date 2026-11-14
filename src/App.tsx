@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { AccountState, ProfileInput, Theme } from './shared';
 import { Sidebar } from './components/Sidebar';
+import { CalendarPage } from './pages/CalendarPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SignInPage } from './pages/SignInPage';
 import { pages, PlaceholderPage, type PageId } from './pages/PlaceholderPage';
@@ -102,7 +103,11 @@ export function App() {
                 Твій власний темп
               </span>
             </header>
-            <PlaceholderPage page={page} />
+            {page === 'calendar' ? (
+              <CalendarPage dailyGoal={account.profile.dailyGoalMinutes} />
+            ) : (
+              <PlaceholderPage page={page} />
+            )}
             <footer className="workspace-footer">
               ReadingFlow <span>Маленькі кроки. Великі історії.</span>
             </footer>

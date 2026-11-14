@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import schema from '../database/schema.sql?raw';
-import type { Book, NewBook } from './shared';
+import type { Book, CalendarEntry, NewBook, ReadingPlan } from './shared';
 import {
   avatars,
   type AccountState,
@@ -121,6 +121,45 @@ export function openDatabase(filename: string) {
           'SELECT id, title, author, total_pages, current_page, status FROM books WHERE id = ?',
         )
         .get(result.lastInsertRowid) as unknown as Book;
+    },
+    listCalendarEntries: (start: number, end: number) => {
+      if (
+        !Number.isSafeInteger(start) ||
+        !Number.isSafeInteger(end) ||
+        start >= end
+      )
+        throw new Error('Некоректний діапазон календаря.');
+      return db
+        .prepare(
+          `SELECT id, bookTitle, startsAt, minutes, status FROM (
+             SELECT p.id AS id, b.title AS bookTitle, p.scheduled_at AS startsAt,
+                    p.duration_minutes AS minutes, p.status AS status
+             FROM planned_sessions p JOIN books b ON b.id = p.book_id
+             WHERE p.scheduled_at >= ? AND p.scheduled_at < ?
+             UNION ALL
+             SELECT s.id, b.title, s.started_at, s.duration_ms / 60000.0, 'read'
+             FROM reading_sessions s JOIN books b ON b.id = s.book_id
+             WHERE s.started_at >= ? AND s.started_at < ?
+           )
+           ORDER BY startsAt, status, id`,
+        )
+        .all(start, end, start, end) as unknown as CalendarEntry[];
+    },
+    addReadingPlan: (plan: ReadingPlan) => {
+      if (
+        !plan ||
+        !Number.isSafeInteger(plan.bookId) ||
+        plan.bookId < 1 ||
+        !Number.isSafeInteger(plan.startsAt) ||
+        Math.abs(plan.startsAt) > 8_640_000_000_000_000 ||
+        !Number.isInteger(plan.minutes) ||
+        plan.minutes < 1 ||
+        plan.minutes > 1440
+      )
+        throw new Error('Перевір книгу, час початку та тривалість читання.');
+      db.prepare(
+        'INSERT INTO planned_sessions (book_id, scheduled_at, duration_minutes) VALUES (?, ?, ?)',
+      ).run(plan.bookId, plan.startsAt, plan.minutes);
     },
     info: () => ({
       path: filename,
