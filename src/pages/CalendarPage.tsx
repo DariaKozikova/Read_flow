@@ -20,6 +20,7 @@ const statuses = {
 } satisfies Record<CalendarEntry['status'], string>;
 const control =
   'rounded-[8px] border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
+const visibleBookLimit = 2;
 
 function startOfDay(date: Date) {
   return new Date(
@@ -226,19 +227,24 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
               return <span key={index} aria-hidden="true" />;
             const timestamp = new Date(year, month, day).getTime();
             const dayEntries = entriesByDay.get(timestamp);
-            const reading = dayEntries?.find(
-              ({ status }) => status === 'read' || status === 'reading',
-            );
-            const cover = reading && coversByBook.get(reading.bookId);
+            const readingBooks = new Map<number, string>();
+            for (const entry of dayEntries ?? []) {
+              if (entry.status === 'read' || entry.status === 'reading') {
+                readingBooks.set(entry.bookId, entry.bookTitle);
+              }
+            }
+            const shownBooks = [...readingBooks].slice(0, visibleBookLimit);
+            const extraBooks = readingBooks.size - shownBooks.length;
+            const bookNames = [...readingBooks.values()].join(', ');
             return (
               <button
                 key={index}
                 type="button"
-                className="flex min-h-[74px] min-w-0 flex-col items-center gap-1 rounded-[8px] border border-solid border-transparent bg-transparent px-0.5 py-1 text-[13px] hover:bg-soft aria-[current=date]:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
+                className="flex min-h-[84px] min-w-0 flex-col items-center gap-1 rounded-[8px] border border-solid border-transparent bg-transparent px-0.5 py-1 text-[13px] hover:bg-soft aria-[current=date]:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
                 aria-label={
                   dateFormat.format(timestamp) +
-                  (reading
-                    ? `, ${reading.bookTitle}`
+                  (bookNames
+                    ? `, ${bookNames}`
                     : dayEntries
                       ? ', є записи'
                       : '')
@@ -248,18 +254,29 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                 onClick={() => selectDay(timestamp)}
               >
                 {day}
-                {cover ? (
-                  <img
-                    src={cover}
-                    alt=""
-                    className="h-10 w-7 max-w-full rounded-[3px] object-contain"
-                  />
-                ) : reading ? (
+                {shownBooks.length > 0 ? (
                   <span
                     aria-hidden="true"
-                    className="grid h-10 w-7 max-w-full place-items-center rounded-[3px] bg-surface text-accent"
+                    className="flex w-full justify-center gap-0.5"
                   >
-                    ▤
+                    {shownBooks.map(([id]) => {
+                      const cover = coversByBook.get(id);
+                      return cover ? (
+                        <img
+                          key={id}
+                          src={cover}
+                          alt=""
+                          className="h-9 w-6 min-w-0 shrink rounded-[3px] object-contain"
+                        />
+                      ) : (
+                        <span
+                          key={id}
+                          className="grid h-9 w-6 min-w-0 shrink place-items-center overflow-hidden rounded-[3px] bg-surface text-accent"
+                        >
+                          ▤
+                        </span>
+                      );
+                    })}
                   </span>
                 ) : dayEntries ? (
                   <span
@@ -267,6 +284,11 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                     className="size-1 rounded-full bg-current"
                   />
                 ) : null}
+                {extraBooks > 0 && (
+                  <span aria-hidden="true" className="text-[10px] leading-none">
+                    +{extraBooks}
+                  </span>
+                )}
               </button>
             );
           })}
