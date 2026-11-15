@@ -1,12 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import schema from '../database/schema.sql?raw';
-import type {
-  ActiveReading,
-  Book,
-  CalendarEntry,
-  NewBook,
-  ReadingPlan,
-} from './shared';
+import type { ActiveReading, Book, CalendarEntry, NewBook } from './shared';
 import {
   avatars,
   maxBookCoverBytes,
@@ -52,20 +46,6 @@ function validateCover(cover: Uint8Array | null) {
       !coverType(cover))
   )
     throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
-}
-
-function validateReadingTime(entry: ReadingPlan) {
-  if (
-    !entry ||
-    !Number.isSafeInteger(entry.bookId) ||
-    entry.bookId < 1 ||
-    !Number.isSafeInteger(entry.startsAt) ||
-    Math.abs(entry.startsAt) > 8_640_000_000_000_000 ||
-    !Number.isInteger(entry.minutes) ||
-    entry.minutes < 1 ||
-    entry.minutes > 1440
-  )
-    throw new Error('Перевір книгу, час початку та тривалість читання.');
 }
 
 export function openDatabase(filename: string) {
@@ -219,14 +199,9 @@ export function openDatabase(filename: string) {
       return db
         .prepare(
           `SELECT id, bookId, bookTitle, startsAt, minutes, status, startPage, endPage FROM (
-             SELECT p.id AS id, p.book_id AS bookId, b.title AS bookTitle, p.scheduled_at AS startsAt,
-                    p.duration_minutes AS minutes, p.status AS status,
-                    NULL AS startPage, NULL AS endPage
-             FROM planned_sessions p JOIN books b ON b.id = p.book_id
-             WHERE p.scheduled_at >= ? AND p.scheduled_at < ?
-             UNION ALL
-             SELECT s.id, s.book_id, b.title, s.started_at, s.duration_ms / 60000.0, 'read',
-                    s.start_page, s.end_page
+             SELECT s.id AS id, s.book_id AS bookId, b.title AS bookTitle,
+                    s.started_at AS startsAt, s.duration_ms / 60000.0 AS minutes,
+                    'read' AS status, s.start_page AS startPage, s.end_page AS endPage
              FROM reading_sessions s JOIN books b ON b.id = s.book_id
              WHERE s.started_at >= ? AND s.started_at < ?
              UNION ALL
@@ -236,7 +211,7 @@ export function openDatabase(filename: string) {
            )
            ORDER BY startsAt, status, id`,
         )
-        .all(start, end, start, end, start, end) as unknown as CalendarEntry[];
+        .all(start, end, start, end) as unknown as CalendarEntry[];
     },
     getActiveReading,
     pauseReading: () => {
@@ -345,12 +320,6 @@ export function openDatabase(filename: string) {
         db.exec('ROLLBACK');
         throw error;
       }
-    },
-    addReadingPlan: (plan: ReadingPlan) => {
-      validateReadingTime(plan);
-      db.prepare(
-        'INSERT INTO planned_sessions (book_id, scheduled_at, duration_minutes) VALUES (?, ?, ?)',
-      ).run(plan.bookId, plan.startsAt, plan.minutes);
     },
     info: () => ({
       path: filename,

@@ -17,7 +17,6 @@ const api: ReadingFlowApi = {
     ipcRenderer.invoke('books:update-cover', id, cover),
   listCalendarEntries: (start, end) =>
     ipcRenderer.invoke('calendar:list', start, end),
-  addReadingPlan: (plan) => ipcRenderer.invoke('calendar:add-plan', plan),
   databaseInfo: () => ipcRenderer.invoke('database:info'),
 };
 contextBridge.exposeInMainWorld('api', api);

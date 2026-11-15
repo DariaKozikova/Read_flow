@@ -22,8 +22,8 @@ export interface CalendarEntry {
   bookTitle: string;
   startsAt: number;
   minutes: number;
-  status: 'planned' | 'completed' | 'cancelled' | 'read' | 'reading' | 'paused';
-  startPage: number | null;
+  status: 'read' | 'reading' | 'paused';
+  startPage: number;
   endPage: number | null;
 }
 export interface ActiveReading {
@@ -31,11 +31,6 @@ export interface ActiveReading {
   startPage: number;
   accumulatedMs: number;
   runningSince: number | null;
-}
-export interface ReadingPlan {
-  bookId: number;
-  startsAt: number;
-  minutes: number;
 }
 export interface ReadingFlowApi {
   getAccount: () => Promise<AccountState>;
@@ -45,7 +40,6 @@ export interface ReadingFlowApi {
   addBook: (book: NewBook) => Promise<Book>;
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
-  addReadingPlan: (plan: ReadingPlan) => Promise<void>;
   getActiveReading: () => Promise<ActiveReading | null>;
   startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
   pauseReading: () => Promise<ActiveReading>;

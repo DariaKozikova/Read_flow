@@ -88,17 +88,14 @@ try {
   const start = Date.UTC(2026, 10, 1);
   const end = Date.UTC(2026, 11, 1);
   assert.throws(() => db.listCalendarEntries(end, start));
-  assert.throws(() =>
-    db.addReadingPlan({ bookId, startsAt: start, minutes: 0 }),
-  );
-  assert.throws(() =>
-    db.addReadingPlan({ bookId: bookId + 1000, startsAt: start, minutes: 30 }),
-  );
-  db.addReadingPlan({ bookId, startsAt: start, minutes: 45 });
-  db.addReadingPlan({ bookId, startsAt: end, minutes: 30 });
   db.close();
   db = undefined;
   const check = new DatabaseSync(filename);
+  check
+    .prepare(
+      'INSERT INTO planned_sessions (book_id, scheduled_at, duration_minutes) VALUES (?, ?, ?)',
+    )
+    .run(bookId, start, 45);
   assert.equal(check.prepare('PRAGMA user_version').get().user_version, 2);
   assert.equal(
     check.prepare('PRAGMA integrity_check').get().integrity_check,
@@ -142,12 +139,6 @@ try {
         status,
       })),
     [
-      {
-        bookTitle: 'Наявна книга',
-        startsAt: start,
-        minutes: 45,
-        status: 'planned',
-      },
       {
         bookTitle: 'Наявна книга',
         startsAt: start + 60_000,

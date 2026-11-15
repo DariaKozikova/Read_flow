@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AccountState, ProfileInput, Theme } from './shared';
 import { Sidebar } from './components/Sidebar';
 import { CalendarPage } from './pages/CalendarPage';
+import { HomePage } from './pages/HomePage';
 import { LibraryPage } from './pages/LibraryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SignInPage } from './pages/SignInPage';
@@ -104,7 +105,9 @@ export function App() {
                 Твій власний темп
               </span>
             </header>
-            {page === 'calendar' ? (
+            {page === 'home' ? (
+              <HomePage dailyGoal={account.profile.dailyGoalMinutes} />
+            ) : page === 'calendar' ? (
               <CalendarPage dailyGoal={account.profile.dailyGoalMinutes} />
             ) : page === 'library' ? (
               <LibraryPage />
