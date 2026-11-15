@@ -338,6 +338,15 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                     `${minutesFormat.format(entry.minutes)} хв · `}
                   {statuses[entry.status]}
                 </span>
+                {entry.startPage !== null && entry.startPage > 0 && (
+                  <p className="m-0 mt-1 text-[12px]">
+                    {entry.endPage === null
+                      ? `Початкова сторінка: ${entry.startPage}`
+                      : entry.startPage === entry.endPage
+                        ? `Сторінка ${entry.startPage}`
+                        : `Сторінки ${entry.startPage}–${entry.endPage}`}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

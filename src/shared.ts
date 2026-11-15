@@ -23,6 +23,8 @@ export interface CalendarEntry {
   startsAt: number;
   minutes: number;
   status: 'planned' | 'completed' | 'cancelled' | 'read' | 'reading';
+  startPage: number | null;
+  endPage: number | null;
 }
 export interface ActiveReading {
   bookId: number;

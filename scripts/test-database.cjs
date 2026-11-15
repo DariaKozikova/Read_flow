@@ -186,10 +186,13 @@ try {
   assert.throws(() => fresh.startReading(book.id, 6));
   assert.throws(() => fresh.finishReading(4));
   assert.equal(fresh.getActiveReading().startPage, 5);
-  assert.equal(
-    fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
-    'reading',
-  );
+  const activeEntry = fresh.listCalendarEntries(
+    beforeReading,
+    Date.now() + 1,
+  )[0];
+  assert.equal(activeEntry.status, 'reading');
+  assert.equal(activeEntry.startPage, 5);
+  assert.equal(activeEntry.endPage, null);
   const realNow = Date.now;
   Date.now = () => session.runningSince + 90_000;
   try {
@@ -198,14 +201,14 @@ try {
     Date.now = realNow;
   }
   assert.equal(fresh.getActiveReading(), null);
-  assert.equal(
-    fresh.listCalendarEntries(beforeReading, Date.now() + 1)[0].status,
-    'read',
-  );
-  assert.equal(
-    fresh.listCalendarEntries(beforeReading, realNow() + 1)[0].minutes,
-    1.5,
-  );
+  const completedEntry = fresh.listCalendarEntries(
+    beforeReading,
+    Date.now() + 1,
+  )[0];
+  assert.equal(completedEntry.status, 'read');
+  assert.equal(completedEntry.minutes, 1.5);
+  assert.equal(completedEntry.startPage, 5);
+  assert.equal(completedEntry.endPage, 12);
   fresh.close();
   console.log(
     'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',
