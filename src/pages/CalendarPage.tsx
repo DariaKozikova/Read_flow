@@ -172,7 +172,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
               <button
                 key={index}
                 type="button"
-                className="flex min-h-[84px] min-w-0 flex-col items-center gap-1 rounded-[8px] border border-solid border-transparent bg-transparent px-0.5 py-1 text-[13px] hover:bg-soft aria-[current=date]:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
+                className="relative aspect-[2/3] w-full min-w-0 overflow-hidden rounded-[8px] border border-solid border-transparent bg-transparent p-0 text-[13px] leading-4 hover:bg-soft aria-[current=date]:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
                 aria-label={
                   dateFormat.format(timestamp) +
                   (bookNames ? `, ${bookNames}` : '')
@@ -181,11 +181,29 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                 aria-pressed={timestamp === selected}
                 onClick={() => setSelected(timestamp)}
               >
-                {day}
+                <span className="pointer-events-none absolute inset-x-1 top-1 z-10 flex items-start justify-between gap-0.5 tabular-nums">
+                  <span
+                    className={
+                      shownBooks.length > 0
+                        ? 'rounded-[4px] bg-ink px-1 font-semibold text-canvas'
+                        : 'px-1'
+                    }
+                  >
+                    {day}
+                  </span>
+                  {extraBooks > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="rounded-[4px] bg-ink px-1 text-[10px] font-semibold text-canvas"
+                    >
+                      +{extraBooks}
+                    </span>
+                  )}
+                </span>
                 {shownBooks.length > 0 ? (
                   <span
                     aria-hidden="true"
-                    className="flex w-full justify-center gap-0.5"
+                    className="absolute inset-0 flex gap-px"
                   >
                     {shownBooks.map(([id]) => {
                       const cover = coversByBook.get(id);
@@ -194,12 +212,12 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                           key={id}
                           src={cover}
                           alt=""
-                          className="h-9 w-6 min-w-0 shrink rounded-[3px] object-contain"
+                          className="h-full w-0 min-w-0 flex-1 object-contain"
                         />
                       ) : (
                         <span
                           key={id}
-                          className="grid h-9 w-6 min-w-0 shrink place-items-center overflow-hidden rounded-[3px] bg-surface text-accent"
+                          className="grid min-w-0 flex-1 place-items-center bg-soft text-[20px] text-accent"
                         >
                           ▤
                         </span>
@@ -207,11 +225,6 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                     })}
                   </span>
                 ) : null}
-                {extraBooks > 0 && (
-                  <span aria-hidden="true" className="text-[10px] leading-none">
-                    +{extraBooks}
-                  </span>
-                )}
               </button>
             );
           })}
