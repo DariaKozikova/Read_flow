@@ -22,7 +22,7 @@ export interface CalendarEntry {
   bookTitle: string;
   startsAt: number;
   minutes: number;
-  status: 'planned' | 'completed' | 'cancelled' | 'read' | 'reading';
+  status: 'planned' | 'completed' | 'cancelled' | 'read' | 'reading' | 'paused';
   startPage: number | null;
   endPage: number | null;
 }
@@ -48,6 +48,8 @@ export interface ReadingFlowApi {
   addReadingPlan: (plan: ReadingPlan) => Promise<void>;
   getActiveReading: () => Promise<ActiveReading | null>;
   startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
+  pauseReading: () => Promise<ActiveReading>;
+  resumeReading: () => Promise<ActiveReading>;
   finishReading: (endPage: number) => Promise<Book>;
   databaseInfo: () => Promise<{ path: string; tables: number }>;
 }

@@ -18,6 +18,8 @@ import {
 const bookColumns =
   'id, title, author, total_pages, current_page, status, cover';
 type BookRow = Omit<Book, 'coverUrl'> & { cover: Uint8Array | null };
+const activeReadingColumns =
+  'book_id AS bookId, start_page AS startPage, accumulated_ms AS accumulatedMs, running_since AS runningSince';
 
 function coverType(bytes: Uint8Array) {
   const header = Buffer.from(bytes.subarray(0, 12));
@@ -121,7 +123,7 @@ export function openDatabase(filename: string) {
     return (
       (db
         .prepare(
-          'SELECT book_id AS bookId, start_page AS startPage, accumulated_ms AS accumulatedMs, running_since AS runningSince FROM active_session WHERE id = 1',
+          `SELECT ${activeReadingColumns} FROM active_session WHERE id = 1`,
         )
         .get() as ActiveReading | undefined) ?? null
     );
@@ -228,7 +230,7 @@ export function openDatabase(filename: string) {
              FROM reading_sessions s JOIN books b ON b.id = s.book_id
              WHERE s.started_at >= ? AND s.started_at < ?
              UNION ALL
-             SELECT a.id, a.book_id, b.title, a.started_at, 0, 'reading', a.start_page, NULL
+             SELECT a.id, a.book_id, b.title, a.started_at, 0, a.state, a.start_page, NULL
              FROM active_session a JOIN books b ON b.id = a.book_id
              WHERE a.started_at >= ? AND a.started_at < ?
            )
@@ -237,6 +239,32 @@ export function openDatabase(filename: string) {
         .all(start, end, start, end, start, end) as unknown as CalendarEntry[];
     },
     getActiveReading,
+    pauseReading: () => {
+      const row = db.prepare(
+        `UPDATE active_session
+         SET state = 'paused', accumulated_ms = accumulated_ms + MAX(?, updated_at) - running_since,
+             running_since = NULL, updated_at = MAX(?, updated_at)
+         WHERE id = 1 AND state = 'reading'
+         RETURNING ${activeReadingColumns}`,
+      );
+      const now = Date.now();
+      const session = row.get(now, now) as ActiveReading | undefined;
+      if (!session) throw new Error('Немає активного читання для паузи.');
+      return session;
+    },
+    resumeReading: () => {
+      const now = Date.now();
+      const session = db
+        .prepare(
+          `UPDATE active_session
+         SET state = 'reading', running_since = MAX(?, updated_at), updated_at = MAX(?, updated_at)
+         WHERE id = 1 AND state = 'paused'
+         RETURNING ${activeReadingColumns}`,
+        )
+        .get(now, now) as ActiveReading | undefined;
+      if (!session) throw new Error('Немає призупиненого читання.');
+      return session;
+    },
     startReading: (bookId: number, startPage: number): ActiveReading => {
       if (
         !Number.isSafeInteger(bookId) ||

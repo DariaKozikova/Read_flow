@@ -90,6 +90,23 @@ export function LibraryPage() {
     }
   }
 
+  async function toggleReadingPause() {
+    if (!active || readingBusy) return;
+    setReadingError('');
+    setReadingBusy(true);
+    try {
+      setActive(
+        active.runningSince === null
+          ? await window.api.resumeReading()
+          : await window.api.pauseReading(),
+      );
+    } catch {
+      setReadingError('Не вдалося змінити стан таймера. Спробуй ще раз.');
+    } finally {
+      setReadingBusy(false);
+    }
+  }
+
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
       {state.status === 'loaded' && (
@@ -174,7 +191,9 @@ export function LibraryPage() {
                 <div className="flex flex-wrap items-center gap-2 text-[12px]">
                   <span className="rounded-full bg-soft px-2 py-1 font-medium text-accent">
                     {active?.bookId === book.id
-                      ? 'Читаю зараз'
+                      ? active.runningSince === null
+                        ? 'На паузі'
+                        : 'Читаю зараз'
                       : statusLabels[book.status]}
                   </span>
                   <span className="text-muted">
@@ -189,6 +208,18 @@ export function LibraryPage() {
                     onSubmit={(event) => void saveReading(event, book.id)}
                   >
                     {active && <ReadingTimer session={active} />}
+                    {active && (
+                      <button
+                        type="button"
+                        className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+                        disabled={readingBusy}
+                        onClick={toggleReadingPause}
+                      >
+                        {active.runningSince === null
+                          ? 'Продовжити читання'
+                          : 'Пауза'}
+                      </button>
+                    )}
                     <label className="grid gap-1 text-[13px]">
                       {active ? 'Кінцева сторінка' : 'Початкова сторінка'}
                       <input

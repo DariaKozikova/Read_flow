@@ -64,6 +64,14 @@ else {
         verify(event);
         return database!.finishReading(endPage);
       });
+      ipcMain.handle('reading:pause', (event) => {
+        verify(event);
+        return database!.pauseReading();
+      });
+      ipcMain.handle('reading:resume', (event) => {
+        verify(event);
+        return database!.resumeReading();
+      });
       ipcMain.handle('account:get', (event) => {
         verify(event);
         return database!.getAccount();

@@ -17,6 +17,7 @@ const statuses = {
   cancelled: 'Скасовано',
   read: 'Прочитано',
   reading: 'Читання триває',
+  paused: 'На паузі',
 } satisfies Record<CalendarEntry['status'], string>;
 const control =
   'rounded-[8px] border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
@@ -224,7 +225,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
             const dayEntries = entriesByDay.get(timestamp);
             const readingBooks = new Map<number, string>();
             for (const entry of dayEntries ?? []) {
-              if (entry.status === 'read' || entry.status === 'reading') {
+              if (entry.startPage !== null) {
                 readingBooks.set(entry.bookId, entry.bookTitle);
               }
             }
@@ -335,6 +336,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
                 <span className="text-[11px] text-muted">
                   {timeFormat.format(entry.startsAt)} ·{' '}
                   {entry.status !== 'reading' &&
+                    entry.status !== 'paused' &&
                     `${minutesFormat.format(entry.minutes)} хв · `}
                   {statuses[entry.status]}
                 </span>

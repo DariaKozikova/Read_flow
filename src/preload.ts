@@ -6,6 +6,8 @@ const api: ReadingFlowApi = {
   startReading: (bookId, startPage) =>
     ipcRenderer.invoke('reading:start', bookId, startPage),
   finishReading: (endPage) => ipcRenderer.invoke('reading:finish', endPage),
+  pauseReading: () => ipcRenderer.invoke('reading:pause'),
+  resumeReading: () => ipcRenderer.invoke('reading:resume'),
   getAccount: () => ipcRenderer.invoke('account:get'),
   createProfile: (input) => ipcRenderer.invoke('account:create', input),
   setTheme: (theme) => ipcRenderer.invoke('settings:theme', theme),

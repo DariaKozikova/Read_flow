@@ -194,8 +194,23 @@ try {
   assert.equal(activeEntry.startPage, 5);
   assert.equal(activeEntry.endPage, null);
   const realNow = Date.now;
-  Date.now = () => session.runningSince + 90_000;
+  let elapsed = 30_000;
+  Date.now = () => session.runningSince + elapsed;
   try {
+    const paused = fresh.pauseReading();
+    assert.equal(paused.accumulatedMs, 30_000);
+    assert.equal(paused.runningSince, null);
+    assert.throws(() => fresh.pauseReading());
+    assert.equal(
+      fresh.listCalendarEntries(beforeReading, Date.now())[0].status,
+      'paused',
+    );
+    elapsed += 120_000;
+    const resumed = fresh.resumeReading();
+    assert.equal(resumed.runningSince, Date.now());
+    assert.equal(resumed.accumulatedMs, 30_000);
+    assert.throws(() => fresh.resumeReading());
+    elapsed += 60_000;
     assert.equal(fresh.finishReading(12).current_page, 12);
   } finally {
     Date.now = realNow;
