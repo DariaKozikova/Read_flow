@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { summarizeReading } from './readingSummary';
 
-export function useTodayReading() {
+export function useReadingSummary(days: 1 | 7 = 1) {
   const [summary, setSummary] = useState<ReturnType<
     typeof summarizeReading
   > | null>();
@@ -13,7 +13,7 @@ export function useTodayReading() {
     const year = today.getFullYear();
     const month = today.getMonth();
     const day = today.getDate();
-    const start = new Date(year, month, day);
+    const start = new Date(year, month, day - days + 1);
     const end = new Date(year, month, day + 1);
     window.api
       .listCalendarEntries(start.getTime(), end.getTime())
@@ -26,7 +26,7 @@ export function useTodayReading() {
     return () => {
       current = false;
     };
-  }, [attempt]);
+  }, [attempt, days]);
 
   function retry() {
     setSummary(undefined);

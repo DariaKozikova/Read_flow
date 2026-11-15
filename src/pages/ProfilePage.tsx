@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Avatar } from '../components/Avatar';
 import { AvatarPicker } from '../components/AvatarPicker';
 import type { ProfileInput } from '../shared';
-import { useTodayReading } from '../useTodayReading';
+import { useReadingSummary } from '../useReadingSummary';
 
 export function ProfilePage({
   profile,
@@ -17,7 +17,8 @@ export function ProfilePage({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<'saved' | 'invalid-name' | 'error'>();
-  const { summary, retry } = useTodayReading();
+  const { summary, retry } = useReadingSummary();
+  const { summary: weekly, retry: retryWeekly } = useReadingSummary(7);
   const minutes = (summary?.milliseconds ?? 0) / 60_000;
   const remaining = Math.max(0, profile.dailyGoalMinutes - Math.floor(minutes));
 
@@ -182,6 +183,53 @@ export function ProfilePage({
                 : `До денної цілі залишилося ${remaining} хв`}
             </p>
           </>
+        )}
+      </section>
+      <section
+        className="mt-4 max-w-[640px] rounded-[20px] border border-border bg-surface p-5"
+        aria-labelledby="profile-weekly-reading"
+      >
+        <h2
+          id="profile-weekly-reading"
+          className="mb-3 text-[18px] font-semibold"
+        >
+          Читання за останні 7 днів
+        </h2>
+        {weekly === undefined ? (
+          <p role="status" className="m-0 text-[13px]">
+            Завантажуємо підсумок…
+          </p>
+        ) : weekly === null ? (
+          <>
+            <p role="alert" className="text-[13px]">
+              Не вдалося завантажити підсумок.
+            </p>
+            <button
+              type="button"
+              className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+              onClick={retryWeekly}
+            >
+              Спробувати ще раз
+            </button>
+          </>
+        ) : (
+          <dl className="m-0 grid grid-cols-3 gap-2">
+            {[
+              {
+                label: 'Хвилини читання',
+                value: Math.floor(weekly.milliseconds / 60_000),
+              },
+              { label: 'Дні з читанням', value: weekly.dayCount },
+              { label: 'Книг читали', value: weekly.bookCount },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-[8px] bg-canvas p-3">
+                <dt className="text-[12px] text-muted">{label}</dt>
+                <dd className="m-0 text-[22px] font-semibold tabular-nums">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
         )}
       </section>
     </section>

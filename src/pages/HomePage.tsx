@@ -1,7 +1,7 @@
-import { useTodayReading } from '../useTodayReading';
+import { useReadingSummary } from '../useReadingSummary';
 
 export function HomePage({ dailyGoal }: { dailyGoal: number }) {
-  const { summary, retry } = useTodayReading();
+  const { summary, retry } = useReadingSummary();
 
   const minutes = (summary?.milliseconds ?? 0) / 60_000;
   return (

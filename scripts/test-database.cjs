@@ -21,6 +21,23 @@ function load(file, imports = {}) {
   return target.exports;
 }
 const shared = load('src/shared.ts');
+const { summarizeReading } = load('src/readingSummary.ts');
+const firstDay = new Date(2026, 10, 10, 12).getTime();
+const nextDay = new Date(2026, 10, 11, 12).getTime();
+assert.deepEqual(
+  summarizeReading([
+    { bookId: 1, startsAt: firstDay, minutes: 10, status: 'read' },
+    { bookId: 1, startsAt: firstDay + 3_600_000, minutes: 5, status: 'read' },
+    { bookId: 2, startsAt: nextDay, minutes: 7.5, status: 'read' },
+    {
+      bookId: 3,
+      startsAt: firstDay - 86_400_000,
+      minutes: 2,
+      status: 'paused',
+    },
+  ]),
+  { milliseconds: 1_350_000, bookCount: 2, dayCount: 2 },
+);
 const { openDatabase } = load('src/database.ts', {
   './shared': shared,
   '../database/schema.sql?raw': schema,
