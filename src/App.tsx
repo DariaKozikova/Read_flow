@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage';
 import { LibraryPage } from './pages/LibraryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SignInPage } from './pages/SignInPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { pages, PlaceholderPage, type PageId } from './pages/PlaceholderPage';
 export function App() {
   const [account, setAccount] = useState<AccountState | null>(null);
@@ -111,6 +112,13 @@ export function App() {
               <CalendarPage dailyGoal={account.profile.dailyGoalMinutes} />
             ) : page === 'library' ? (
               <LibraryPage />
+            ) : page === 'profile' ? (
+              <ProfilePage
+                profile={account.profile}
+                onSaved={(profile) =>
+                  setAccount((current) => current && { ...current, profile })
+                }
+              />
             ) : (
               <PlaceholderPage page={page} />
             )}

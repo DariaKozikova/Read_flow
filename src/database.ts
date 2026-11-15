@@ -48,6 +48,20 @@ function validateCover(cover: Uint8Array | null) {
     throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
 }
 
+function validProfileDetails(
+  input: Pick<ProfileInput, 'name' | 'dailyGoalMinutes'>,
+) {
+  return (
+    input &&
+    typeof input.name === 'string' &&
+    input.name.trim().length > 0 &&
+    input.name.trim().length <= 60 &&
+    Number.isInteger(input.dailyGoalMinutes) &&
+    input.dailyGoalMinutes >= 1 &&
+    input.dailyGoalMinutes <= 1440
+  );
+}
+
 export function openDatabase(filename: string) {
   const db = new DatabaseSync(filename);
   try {
@@ -111,16 +125,7 @@ export function openDatabase(filename: string) {
   return {
     getAccount,
     createProfile: (input: ProfileInput) => {
-      if (
-        !input ||
-        typeof input.name !== 'string' ||
-        !input.name.trim() ||
-        input.name.trim().length > 60 ||
-        !avatars.includes(input.avatar) ||
-        !Number.isInteger(input.dailyGoalMinutes) ||
-        input.dailyGoalMinutes < 1 ||
-        input.dailyGoalMinutes > 1440
-      )
+      if (!validProfileDetails(input) || !avatars.includes(input.avatar))
         throw new Error(
           'Вкажи ім’я до 60 символів, аватар і ціль від 1 до 1440 хвилин.',
         );
@@ -131,6 +136,19 @@ export function openDatabase(filename: string) {
         .run(input.name.trim(), input.avatar, input.dailyGoalMinutes);
       if (result.changes !== 1) throw new Error('Профіль уже створено.');
       return getAccount();
+    },
+    updateProfile: (input: Pick<ProfileInput, 'name' | 'dailyGoalMinutes'>) => {
+      if (!validProfileDetails(input))
+        throw new Error(
+          'Вкажи ім’я до 60 символів і ціль від 1 до 1440 хвилин.',
+        );
+      const result = db
+        .prepare(
+          'UPDATE profile SET name = ?, daily_goal_minutes = ? WHERE id = 1 AND onboarding_completed = 1',
+        )
+        .run(input.name.trim(), input.dailyGoalMinutes);
+      if (result.changes !== 1) throw new Error('Профіль ще не створено.');
+      return getAccount().profile!;
     },
     setTheme: (theme: Theme) => {
       if (!['light', 'dark', 'system'].includes(theme))

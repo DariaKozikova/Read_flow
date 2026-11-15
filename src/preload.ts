@@ -10,6 +10,7 @@ const api: ReadingFlowApi = {
   resumeReading: () => ipcRenderer.invoke('reading:resume'),
   getAccount: () => ipcRenderer.invoke('account:get'),
   createProfile: (input) => ipcRenderer.invoke('account:create', input),
+  updateProfile: (input) => ipcRenderer.invoke('account:update', input),
   setTheme: (theme) => ipcRenderer.invoke('settings:theme', theme),
   listBooks: () => ipcRenderer.invoke('books:list'),
   addBook: (book: NewBook) => ipcRenderer.invoke('books:add', book),

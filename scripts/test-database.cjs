@@ -68,6 +68,15 @@ try {
   db.close();
   db = openDatabase(filename);
   assert.deepEqual(db.getAccount(), { profile, theme: 'dark' });
+  assert.throws(() => db.updateProfile({ name: ' ', dailyGoalMinutes: 60 }));
+  assert.throws(() =>
+    db.updateProfile({ name: profile.name, dailyGoalMinutes: 0 }),
+  );
+  const updatedProfile = { ...profile, name: 'Дарія К.', dailyGoalMinutes: 60 };
+  assert.deepEqual(
+    db.updateProfile({ name: ' Дарія К. ', dailyGoalMinutes: 60 }),
+    updatedProfile,
+  );
   assert.equal(db.listBooks().length, 1);
   const coverBase64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aDaoAAAAASUVORK5CYII=';
@@ -108,6 +117,10 @@ try {
     .run(bookId, start + 60_000, start + 150_000, 90_000);
   check.close();
   db = openDatabase(filename);
+  assert.deepEqual(db.getAccount(), {
+    profile: updatedProfile,
+    theme: 'light',
+  });
   assert.deepEqual(db.listBooks()[0], savedCover);
   const previousBook = db.listBooks()[1];
   assert.throws(() => db.updateBookCover(savedCover.id, Buffer.from('bad')));
@@ -149,6 +162,7 @@ try {
   );
   const fresh = openDatabase(':memory:');
   assert.equal(fresh.getAccount().profile, null);
+  assert.throws(() => fresh.updateProfile(updatedProfile));
   assert.equal(fresh.info().tables, 7);
   assert.equal(fresh.getAccount().theme, 'system');
   const book = fresh.addBook({

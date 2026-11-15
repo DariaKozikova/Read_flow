@@ -80,6 +80,18 @@ else {
         verify(event);
         return database!.createProfile(input);
       });
+      ipcMain.handle(
+        'account:update',
+        (
+          event,
+          input: Parameters<
+            ReturnType<typeof openDatabase>['updateProfile']
+          >[0],
+        ) => {
+          verify(event);
+          return database!.updateProfile(input);
+        },
+      );
       ipcMain.handle('settings:theme', (event, theme: Theme) => {
         verify(event);
         database!.setTheme(theme);
