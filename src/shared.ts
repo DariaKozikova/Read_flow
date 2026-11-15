@@ -35,9 +35,7 @@ export interface ActiveReading {
 export interface ReadingFlowApi {
   getAccount: () => Promise<AccountState>;
   createProfile: (input: ProfileInput) => Promise<AccountState>;
-  updateProfile: (
-    input: Pick<ProfileInput, 'name' | 'dailyGoalMinutes'>,
-  ) => Promise<ProfileInput>;
+  updateProfile: (input: ProfileInput) => Promise<ProfileInput>;
   setTheme: (theme: Theme) => Promise<void>;
   listBooks: () => Promise<Book[]>;
   addBook: (book: NewBook) => Promise<Book>;

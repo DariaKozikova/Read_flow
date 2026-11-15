@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Avatar } from '../components/Avatar';
+import { AvatarPicker } from '../components/AvatarPicker';
 import type { ProfileInput } from '../shared';
 
 export function ProfilePage({
@@ -10,6 +11,7 @@ export function ProfilePage({
   onSaved: (profile: ProfileInput) => void;
 }) {
   const [name, setName] = useState(profile.name);
+  const [avatar, setAvatar] = useState(profile.avatar);
   const [goal, setGoal] = useState(String(profile.dailyGoalMinutes));
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -27,6 +29,7 @@ export function ProfilePage({
     try {
       const updated = await window.api.updateProfile({
         name: name.trim(),
+        avatar,
         dailyGoalMinutes: Number(goal),
       });
       onSaved(updated);
@@ -43,7 +46,7 @@ export function ProfilePage({
     <section className="flex-1 py-6" aria-labelledby="profile-details">
       <div className="max-w-[640px] rounded-[20px] border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center gap-4 rounded-[14px] bg-soft p-4">
-          <Avatar value={profile.avatar} large />
+          <Avatar value={editing ? avatar : profile.avatar} large />
           <div className="min-w-0 flex-1">
             <h2
               id="profile-details"
@@ -63,6 +66,7 @@ export function ProfilePage({
               className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
               onClick={() => {
                 setName(profile.name);
+                setAvatar(profile.avatar);
                 setGoal(String(profile.dailyGoalMinutes));
                 setResult(undefined);
                 setEditing(true);
@@ -85,6 +89,16 @@ export function ProfilePage({
             onChange={() => setResult(undefined)}
           >
             <fieldset disabled={saving} className="grid gap-3">
+              <div className="grid gap-1 text-[13px]">
+                Обери свій аватар
+                <AvatarPicker
+                  value={avatar}
+                  onChange={(value) => {
+                    setAvatar(value);
+                    setResult(undefined);
+                  }}
+                />
+              </div>
               <label className="grid gap-1 text-[13px]">
                 Ім’я
                 <input

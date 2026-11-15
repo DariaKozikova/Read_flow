@@ -137,16 +137,16 @@ export function openDatabase(filename: string) {
       if (result.changes !== 1) throw new Error('Профіль уже створено.');
       return getAccount();
     },
-    updateProfile: (input: Pick<ProfileInput, 'name' | 'dailyGoalMinutes'>) => {
-      if (!validProfileDetails(input))
+    updateProfile: (input: ProfileInput) => {
+      if (!validProfileDetails(input) || !avatars.includes(input.avatar))
         throw new Error(
-          'Вкажи ім’я до 60 символів і ціль від 1 до 1440 хвилин.',
+          'Вкажи ім’я до 60 символів, аватар і ціль від 1 до 1440 хвилин.',
         );
       const result = db
         .prepare(
-          'UPDATE profile SET name = ?, daily_goal_minutes = ? WHERE id = 1 AND onboarding_completed = 1',
+          'UPDATE profile SET name = ?, avatar = ?, daily_goal_minutes = ? WHERE id = 1 AND onboarding_completed = 1',
         )
-        .run(input.name.trim(), input.dailyGoalMinutes);
+        .run(input.name.trim(), input.avatar, input.dailyGoalMinutes);
       if (result.changes !== 1) throw new Error('Профіль ще не створено.');
       return getAccount().profile!;
     },

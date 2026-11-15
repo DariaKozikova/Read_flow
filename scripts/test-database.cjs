@@ -68,13 +68,16 @@ try {
   db.close();
   db = openDatabase(filename);
   assert.deepEqual(db.getAccount(), { profile, theme: 'dark' });
-  assert.throws(() => db.updateProfile({ name: ' ', dailyGoalMinutes: 60 }));
-  assert.throws(() =>
-    db.updateProfile({ name: profile.name, dailyGoalMinutes: 0 }),
-  );
-  const updatedProfile = { ...profile, name: 'Дарія К.', dailyGoalMinutes: 60 };
+  assert.throws(() => db.updateProfile({ ...profile, name: ' ' }));
+  assert.throws(() => db.updateProfile({ ...profile, dailyGoalMinutes: 0 }));
+  assert.throws(() => db.updateProfile({ ...profile, avatar: 'invalid' }));
+  const updatedProfile = {
+    avatar: 'flower',
+    name: 'Дарія К.',
+    dailyGoalMinutes: 60,
+  };
   assert.deepEqual(
-    db.updateProfile({ name: ' Дарія К. ', dailyGoalMinutes: 60 }),
+    db.updateProfile({ ...updatedProfile, name: ' Дарія К. ' }),
     updatedProfile,
   );
   assert.equal(db.listBooks().length, 1);

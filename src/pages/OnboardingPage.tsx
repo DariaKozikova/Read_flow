@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { avatars, type ProfileInput, type Theme } from '../shared';
-import { Avatar, avatarNames } from '../components/Avatar';
+import type { ProfileInput, Theme } from '../shared';
+import { AvatarPicker } from '../components/AvatarPicker';
 import { ThemePicker } from '../components/ThemePicker';
 export function OnboardingPage({
   onCreate,
@@ -111,27 +111,8 @@ export function OnboardingPage({
                 required
                 autoFocus
               />
-              <div className="field-label" id="avatar-label">
-                Обери свій аватар
-              </div>
-              <div
-                className="flex gap-1.75 flex-wrap"
-                role="group"
-                aria-labelledby="avatar-label"
-              >
-                {avatars.map((item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    className={`avatar-choice ${avatar === item ? 'selected' : ''}`}
-                    aria-label={avatarNames[item]}
-                    aria-pressed={avatar === item}
-                    onClick={() => setAvatar(item)}
-                  >
-                    <Avatar value={item} />
-                  </button>
-                ))}
-              </div>
+              <div className="field-label">Обери свій аватар</div>
+              <AvatarPicker value={avatar} onChange={setAvatar} />
               <label className="field-label" htmlFor="daily-goal">
                 Твоя денна ціль
               </label>
