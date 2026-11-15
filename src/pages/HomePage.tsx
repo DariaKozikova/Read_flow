@@ -6,7 +6,7 @@ export function HomePage({ dailyGoal }: { dailyGoal: number }) {
   const minutes = (summary?.milliseconds ?? 0) / 60_000;
   return (
     <section className="flex-1 py-6" aria-labelledby="today-reading">
-      <div className="max-w-[560px] rounded-[16px] border border-border bg-surface p-5">
+      <div className="rounded-[16px] border border-border bg-surface p-4 @min-[680px]:p-6">
         <h2 id="today-reading" className="mb-3 text-[20px] font-semibold">
           Читання сьогодні
         </h2>

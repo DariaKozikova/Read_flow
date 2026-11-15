@@ -1,6 +1,6 @@
 import { Avatar } from './Avatar';
 import { ThemePicker } from './ThemePicker';
-import { pages, type PageId } from '../pages/PlaceholderPage';
+import { pages, type PageId } from '../pages/navigation';
 import type { ProfileInput, Theme } from '../shared';
 export function Sidebar({
   profile,

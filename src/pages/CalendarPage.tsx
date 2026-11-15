@@ -105,7 +105,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
 
   return (
     <section
-      className="grid flex-1 content-start items-start gap-5 py-6 min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]"
+      className="grid flex-1 content-start items-start gap-5 py-6 @min-[720px]:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]"
       aria-label="Календар читання"
     >
       <div className="min-w-0 rounded-[16px] border border-border bg-surface p-4">

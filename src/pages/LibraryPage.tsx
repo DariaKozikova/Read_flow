@@ -166,7 +166,7 @@ export function LibraryPage() {
             Книг за цим запитом не знайдено.
           </p>
         ) : (
-          <ul className="m-0 grid list-none gap-3 p-0 min-[1000px]:grid-cols-2">
+          <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] gap-3 p-0">
             {filteredBooks.map((book) => (
               <li
                 key={book.id}

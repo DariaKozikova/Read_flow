@@ -48,8 +48,11 @@ export function ProfilePage({
   }
 
   return (
-    <section className="flex-1 py-6" aria-labelledby="profile-details">
-      <div className="max-w-[640px] rounded-[20px] border border-border bg-surface p-5">
+    <section
+      className="grid flex-1 content-start gap-4 py-6 @min-[800px]:grid-cols-2"
+      aria-labelledby="profile-details"
+    >
+      <div className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6 @min-[800px]:col-span-full">
         <div className="flex flex-wrap items-center gap-4 rounded-[14px] bg-soft p-4">
           <Avatar value={editing ? avatar : profile.avatar} large />
           <div className="min-w-0 flex-1">
@@ -144,7 +147,7 @@ export function ProfilePage({
         )}
       </div>
       <section
-        className="mt-4 max-w-[640px] rounded-[20px] border border-border bg-surface p-5"
+        className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6"
         aria-labelledby="profile-daily-goal"
       >
         <h2 id="profile-daily-goal" className="mb-3 text-[18px] font-semibold">
@@ -186,7 +189,7 @@ export function ProfilePage({
         )}
       </section>
       <section
-        className="mt-4 max-w-[640px] rounded-[20px] border border-border bg-surface p-5"
+        className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6"
         aria-labelledby="profile-weekly-reading"
       >
         <h2
@@ -213,7 +216,7 @@ export function ProfilePage({
             </button>
           </>
         ) : (
-          <dl className="m-0 grid grid-cols-3 gap-2">
+          <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(min(100%,90px),1fr))] gap-2">
             {[
               {
                 label: 'Хвилини читання',

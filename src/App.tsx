@@ -7,7 +7,7 @@ import { LibraryPage } from './pages/LibraryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SignInPage } from './pages/SignInPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { pages, PlaceholderPage, type PageId } from './pages/PlaceholderPage';
+import { pages, type PageId } from './pages/navigation';
 export function App() {
   const [account, setAccount] = useState<AccountState | null>(null);
   const [signedIn, setSignedIn] = useState(false);
@@ -86,7 +86,7 @@ export function App() {
           onSignIn={() => setSignedIn(true)}
         />
       ) : (
-        <div className="grid grid-cols-[245px_1fr] min-h-screen narrow:grid-cols-[195px_1fr]">
+        <div className="grid min-h-screen grid-cols-[245px_minmax(0,1fr)] narrow:grid-cols-[195px_minmax(0,1fr)]">
           <Sidebar
             profile={account.profile}
             page={page}
@@ -95,7 +95,7 @@ export function App() {
             onThemeChange={changeTheme}
             saving={savingTheme}
           />
-          <main className="[padding:45px_48px_24px] flex flex-col min-w-0 compact:px-6.25 compact:py-8.75 narrow:px-5 narrow:py-7.5">
+          <main className="@container [padding:45px_48px_24px] flex flex-col min-w-0 compact:px-6.25 compact:py-8.75 narrow:px-5 narrow:py-7.5">
             <header className="page-header">
               <div>
                 <p className="eyebrow">ТВІЙ ЧИТАЦЬКИЙ ЩОДЕННИК</p>
@@ -112,15 +112,13 @@ export function App() {
               <CalendarPage dailyGoal={account.profile.dailyGoalMinutes} />
             ) : page === 'library' ? (
               <LibraryPage />
-            ) : page === 'profile' ? (
+            ) : (
               <ProfilePage
                 profile={account.profile}
                 onSaved={(profile) =>
                   setAccount((current) => current && { ...current, profile })
                 }
               />
-            ) : (
-              <PlaceholderPage page={page} />
             )}
             <footer className="workspace-footer">
               ReadingFlow <span>Маленькі кроки. Великі історії.</span>
