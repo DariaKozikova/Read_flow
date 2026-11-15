@@ -1,37 +1,7 @@
-import { useEffect, useState } from 'react';
-import { summarizeReading } from '../readingSummary';
+import { useTodayReading } from '../useTodayReading';
 
 export function HomePage({ dailyGoal }: { dailyGoal: number }) {
-  const [summary, setSummary] = useState<ReturnType<
-    typeof summarizeReading
-  > | null>();
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    let current = true;
-    const today = new Date();
-    const start = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-    const end = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() + 1,
-    );
-    window.api
-      .listCalendarEntries(start.getTime(), end.getTime())
-      .then((entries) => {
-        if (current) setSummary(summarizeReading(entries));
-      })
-      .catch(() => {
-        if (current) setSummary(null);
-      });
-    return () => {
-      current = false;
-    };
-  }, [attempt]);
+  const { summary, retry } = useTodayReading();
 
   const minutes = (summary?.milliseconds ?? 0) / 60_000;
   return (
@@ -52,10 +22,7 @@ export function HomePage({ dailyGoal }: { dailyGoal: number }) {
             <button
               type="button"
               className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
-              onClick={() => {
-                setSummary(undefined);
-                setAttempt((value) => value + 1);
-              }}
+              onClick={retry}
             >
               Спробувати ще раз
             </button>

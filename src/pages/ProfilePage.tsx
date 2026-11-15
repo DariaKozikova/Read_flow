@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Avatar } from '../components/Avatar';
 import { AvatarPicker } from '../components/AvatarPicker';
 import type { ProfileInput } from '../shared';
+import { useTodayReading } from '../useTodayReading';
 
 export function ProfilePage({
   profile,
@@ -16,6 +17,9 @@ export function ProfilePage({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<'saved' | 'invalid-name' | 'error'>();
+  const { summary, retry } = useTodayReading();
+  const minutes = (summary?.milliseconds ?? 0) / 60_000;
+  const remaining = Math.max(0, profile.dailyGoalMinutes - Math.floor(minutes));
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,9 +58,6 @@ export function ProfilePage({
             >
               {profile.name}
             </h2>
-            <p className="m-0 mt-1 text-[13px] text-ink">
-              Денна ціль · {profile.dailyGoalMinutes} хв
-            </p>
           </div>
         </div>
         {!editing && (
@@ -141,6 +142,48 @@ export function ProfilePage({
           </form>
         )}
       </div>
+      <section
+        className="mt-4 max-w-[640px] rounded-[20px] border border-border bg-surface p-5"
+        aria-labelledby="profile-daily-goal"
+      >
+        <h2 id="profile-daily-goal" className="mb-3 text-[18px] font-semibold">
+          Денна ціль
+        </h2>
+        {summary === undefined ? (
+          <p role="status" className="m-0 text-[13px]">
+            Завантажуємо прогрес…
+          </p>
+        ) : summary === null ? (
+          <>
+            <p role="alert" className="text-[13px]">
+              Не вдалося завантажити прогрес.
+            </p>
+            <button
+              type="button"
+              className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+              onClick={retry}
+            >
+              Спробувати ще раз
+            </button>
+          </>
+        ) : (
+          <>
+            <label className="grid gap-2 text-[13px]">
+              {Math.floor(minutes)} із {profile.dailyGoalMinutes} хв сьогодні
+              <progress
+                className="h-2 w-full accent-accent"
+                max={profile.dailyGoalMinutes}
+                value={Math.min(minutes, profile.dailyGoalMinutes)}
+              />
+            </label>
+            <p className="m-0 mt-2 text-[13px] text-muted">
+              {remaining === 0
+                ? 'Денну ціль виконано'
+                : `До денної цілі залишилося ${remaining} хв`}
+            </p>
+          </>
+        )}
+      </section>
     </section>
   );
 }
