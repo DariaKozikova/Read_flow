@@ -111,6 +111,9 @@
 .avatar {
   @apply grid place-items-center w-[43px] h-[43px] shrink-0 rounded-[50%] [font:28px_Georgia,_serif] text-[#3c573b] bg-[#e4eacb];
 }
+.avatar-large {
+  @apply size-[68px] text-[42px];
+}
 .avatar-moon {
   @apply bg-[#e6e0f0] text-[#65517c];
 }
