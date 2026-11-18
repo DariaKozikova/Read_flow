@@ -18,6 +18,7 @@ export interface NewBook {
 }
 export type BookDetailsInput = Pick<NewBook, 'title' | 'author'> & {
   cover?: Uint8Array | null;
+  total_pages?: number;
 };
 export interface CalendarEntry {
   id: number;

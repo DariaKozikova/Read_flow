@@ -309,6 +309,39 @@ try {
   const finishedBook = fresh.finishReading(120);
   assert.equal(finishedBook.current_page, 120);
   assert.equal(finishedBook.status, 'finished');
+  for (const total_pages of [0, 1.5, 1000001, 119]) {
+    assert.throws(() =>
+      fresh.updateBookDetails(book.id, {
+        title: 'Не зберігати',
+        author: '',
+        total_pages,
+      }),
+    );
+  }
+  assert.deepEqual(fresh.listBooks(), [finishedBook]);
+  const expanded = fresh.updateBookDetails(book.id, {
+    title: finishedBook.title,
+    author: finishedBook.author,
+    total_pages: 150,
+  });
+  assert.equal(expanded.total_pages, 150);
+  assert.equal(expanded.status, 'reading');
+  fresh.startReading(book.id, 140);
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, {
+      title: expanded.title,
+      author: expanded.author,
+      total_pages: 130,
+    }),
+  );
+  fresh.finishReading(140);
+  const resized = fresh.updateBookDetails(book.id, {
+    title: expanded.title,
+    author: expanded.author,
+    total_pages: 140,
+  });
+  assert.equal(resized.status, 'finished');
+  assert.equal(resized.total_pages, 140);
   fresh.close();
   console.log(
     'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',
