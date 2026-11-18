@@ -25,7 +25,7 @@ export function ReadingTimer({ session }: { session: ActiveReading }) {
     .join(':');
 
   return (
-    <p className="m-0 rounded-[8px] bg-soft px-3 py-2 text-[13px] text-ink">
+    <p className="m-0 rounded-control bg-soft px-3 py-2 text-[13px] text-ink">
       Сторінка початку: {session.startPage} ·{' '}
       <span role="timer" className="font-semibold tabular-nums">
         {display}

@@ -42,7 +42,7 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
 
   return (
     <form
-      className="mb-5 rounded-[16px] border border-border bg-surface p-4"
+      className="mb-5 rounded-panel border border-border bg-surface p-4"
       aria-labelledby="add-book-title"
       onSubmit={submit}
       onInput={() => setError('')}
