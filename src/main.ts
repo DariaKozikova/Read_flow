@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { openDatabase } from './database';
-import type { NewBook, ProfileInput, Theme } from './shared';
+import type { BookDetailsInput, NewBook, ProfileInput, Theme } from './shared';
 
 let database: ReturnType<typeof openDatabase> | undefined;
 function createWindow() {
@@ -12,7 +12,7 @@ function createWindow() {
     minWidth: 700,
     minHeight: 600,
     title: 'ReadingFlow',
-    backgroundColor: '#f5f5ee',
+    backgroundColor: '#99a75b',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -100,6 +100,13 @@ else {
         verify(event);
         return database!.addBook(input);
       });
+      ipcMain.handle(
+        'books:update-details',
+        (event, id: number, input: BookDetailsInput) => {
+          verify(event);
+          return database!.updateBookDetails(id, input);
+        },
+      );
       ipcMain.handle(
         'books:update-cover',
         (event, id: number, cover: Uint8Array | null) => {

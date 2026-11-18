@@ -16,6 +16,9 @@ export interface NewBook {
   total_pages: number;
   cover?: Uint8Array;
 }
+export type BookDetailsInput = Pick<NewBook, 'title' | 'author'> & {
+  cover?: Uint8Array | null;
+};
 export interface CalendarEntry {
   id: number;
   bookId: number;
@@ -40,6 +43,7 @@ export interface ReadingFlowApi {
   listBooks: () => Promise<Book[]>;
   addBook: (book: NewBook) => Promise<Book>;
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
+  updateBookDetails: (id: number, input: BookDetailsInput) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
   getActiveReading: () => Promise<ActiveReading | null>;
   startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
