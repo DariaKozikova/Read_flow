@@ -17,8 +17,8 @@ type LibraryState =
 
 export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
-  const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState('');
+  const [attempt, setAttempt] = useState(0);
   const [active, setActive] = useState<ActiveReading | null>(null);
   const [readingBook, setReadingBook] = useState<number>();
   const [readingBusy, setReadingBusy] = useState(false);
@@ -110,6 +110,17 @@ export function LibraryPage() {
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
       {state.status === 'loaded' && (
+        <label className="mb-4 grid max-w-[440px] gap-1 text-[13px]">
+          Пошук книг
+          <input
+            type="search"
+            placeholder="Назва або автор"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+      )}
+      {state.status === 'loaded' && (
         <BookForm
           onAdded={(book) => {
             setQuery('');
@@ -121,24 +132,13 @@ export function LibraryPage() {
           }}
         />
       )}
-      {state.status === 'loaded' && state.books.length > 0 && (
-        <label className="mb-4 grid max-w-[440px] gap-1 text-[13px]">
-          Пошук книг
-          <input
-            type="search"
-            placeholder="Назва або автор"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-      )}
       {state.status === 'loading' && <p role="status">Завантажуємо книги…</p>}
       {state.status === 'error' && (
         <>
           <p role="alert">Не вдалося завантажити книги.</p>
           <button
             type="button"
-            className="rounded-[8px] border border-border bg-surface px-3 py-2 text-[13px] hover:bg-soft"
+            className="rounded-control border border-border bg-surface px-3 py-2 text-[13px] hover:bg-soft"
             onClick={() => {
               setState({ status: 'loading' });
               setAttempt((value) => value + 1);
@@ -150,7 +150,7 @@ export function LibraryPage() {
       )}
       {state.status === 'loaded' &&
         (state.books.length === 0 ? (
-          <div className="rounded-[16px] border border-border bg-surface p-6 text-center">
+          <div className="rounded-panel border border-border bg-surface p-6 text-center">
             <h2 className="mb-2 text-[18px] font-semibold">
               Бібліотека поки порожня
             </h2>
@@ -161,7 +161,7 @@ export function LibraryPage() {
         ) : filteredBooks.length === 0 ? (
           <p
             role="status"
-            className="rounded-[16px] border border-border bg-surface p-4 text-[13px]"
+            className="rounded-panel border border-border bg-surface p-4 text-[13px]"
           >
             Книг за цим запитом не знайдено.
           </p>
@@ -170,14 +170,14 @@ export function LibraryPage() {
             {filteredBooks.map((book) => (
               <li
                 key={book.id}
-                className="min-w-0 rounded-[16px] border border-border bg-surface p-4"
+                className="min-w-0 rounded-panel border border-border bg-surface p-4"
               >
                 {book.coverUrl && (
                   <img
                     src={book.coverUrl}
                     alt=""
                     loading="lazy"
-                    className="mb-3 h-[126px] w-[84px] rounded-[8px] bg-canvas object-contain"
+                    className="mb-3 h-[126px] w-[84px] rounded-control bg-canvas object-contain"
                   />
                 )}
                 <h2 className="mb-1 wrap-anywhere text-[17px] font-semibold">
@@ -189,7 +189,7 @@ export function LibraryPage() {
                   </p>
                 )}
                 <div className="flex flex-wrap items-center gap-2 text-[12px]">
-                  <span className="rounded-full bg-soft px-2 py-1 font-medium text-accent">
+                  <span className="rounded-control bg-soft px-2 py-1 font-medium text-accent">
                     {active?.bookId === book.id
                       ? active.runningSince === null
                         ? 'На паузі'
@@ -211,7 +211,7 @@ export function LibraryPage() {
                     {active && (
                       <button
                         type="button"
-                        className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+                        className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
                         disabled={readingBusy}
                         onClick={toggleReadingPause}
                       >

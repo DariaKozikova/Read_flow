@@ -8,6 +8,9 @@
 
 @theme inline {
   --spacing: 4px;
+  --font-sans: 'Nunito Variable', 'Arial', sans-serif;
+  --radius-panel: 8px;
+  --radius-control: 4px;
   --color-canvas: var(--bg);
   --color-surface: var(--surface);
   --color-sidebar: var(--sidebar);
@@ -53,7 +56,7 @@
     @apply box-border;
   }
   body {
-    @apply m-0 bg-canvas text-ink [font:15px/1.5_'Segoe_UI',_sans-serif];
+    @apply m-0 bg-canvas font-sans text-[15px] leading-normal text-ink;
   }
   button,
   input {
@@ -78,7 +81,7 @@
     @apply text-muted;
   }
   input {
-    @apply w-full px-3.75 py-3.25 [border:1px_solid_var(--border)] rounded-[10px] bg-input text-ink;
+    @apply w-full px-3.75 py-3.25 [border:1px_solid_var(--border)] rounded-control bg-input text-ink;
   }
   fieldset {
     @apply border-0 p-0 m-0 min-w-0;
@@ -91,19 +94,13 @@
   @apply flex items-center gap-2.75 font-bold text-[23px] tracking-[-0.8px];
 }
 .brand-mark {
-  @apply grid place-items-center w-[37px] h-10 text-accent-text bg-accent rounded-[10px] text-[27px];
-}
-.brand small {
-  @apply block text-[10px] font-normal text-muted tracking-[0.3px] mt-0.75;
-}
-.eyebrow {
-  @apply text-[10px] font-bold tracking-[2px] text-accent;
+  @apply grid place-items-center w-[37px] h-10 text-accent-text bg-accent rounded-control text-[27px];
 }
 .theme-picker {
-  @apply flex p-1 gap-0.75 [border:1px_solid_var(--border)] bg-canvas rounded-[10px];
+  @apply flex p-1 gap-0.75 [border:1px_solid_var(--border)] bg-canvas rounded-control;
 }
 .theme-picker button {
-  @apply flex-1 flex items-center justify-center gap-1.75 border-0 bg-transparent text-muted px-3.25 py-2 rounded-[7px] text-[12px];
+  @apply flex-1 flex items-center justify-center gap-1.75 border-0 bg-transparent text-muted px-3.25 py-2 rounded-control text-[12px];
 }
 .theme-picker button[aria-pressed='true'] {
   @apply bg-surface text-ink [box-shadow:0_1px_5px_#0000000b];
@@ -130,11 +127,11 @@
   @apply bg-[#e4e0cd] text-[#75643c];
 }
 .primary-button {
-  @apply flex items-center justify-center gap-5.5 w-full px-5 py-3.5 border-0 rounded-[10px] bg-accent text-accent-text font-semibold;
+  @apply flex items-center justify-center gap-5.5 w-full px-5 py-3.5 border-0 rounded-control bg-accent text-accent-text font-semibold;
 }
 .error,
 .global-error {
-  @apply bg-[#fbe5df] text-[#8e3025] p-3 rounded-[8px] text-[13px];
+  @apply bg-[#fbe5df] text-[#8e3025] p-3 rounded-control text-[13px];
 }
 .global-error {
   @apply fixed z-10 top-3.75 left-1/2 [transform:translateX(-50%)] max-w-[90vw];
@@ -178,17 +175,8 @@
   @apply block text-[7px] mt-4.5 tracking-[2px];
 }
 
-.welcome-copy .welcome-footnote {
-  @apply text-[11px];
-}
 .onboarding-card {
-  @apply [padding:30px_34px] bg-surface [border:1px_solid_var(--border)] rounded-[20px] [box-shadow:var(--shadow)];
-}
-.step-label {
-  @apply flex justify-between text-muted text-[9px] tracking-[1.7px] mb-6;
-}
-.step-label span {
-  @apply tracking-[0];
+  @apply [padding:30px_34px] bg-surface [border:1px_solid_var(--border)] rounded-panel [box-shadow:var(--shadow)];
 }
 .onboarding-card h2 {
   @apply text-[25px] tracking-[-0.7px] mb-1.75;
@@ -222,7 +210,7 @@
   @apply flex gap-1.75 mt-2.5;
 }
 .goal-presets button {
-  @apply bg-transparent [border:1px_solid_var(--border)] rounded-[6px] px-2.75 py-1.25 text-[11px];
+  @apply bg-transparent [border:1px_solid_var(--border)] rounded-control px-2.75 py-1.25 text-[11px];
 }
 .goal-presets button[aria-pressed='true'] {
   @apply bg-soft border-accent;
@@ -232,29 +220,6 @@
 }
 .privacy-note {
   @apply text-center text-[10px]! leading-[1.8] [margin:17px_0_0]!;
-}
-
-.sidebar {
-  @apply sticky top-0 h-screen flex flex-col [padding:30px_20px_18px] bg-sidebar [border-right:1px_solid_var(--border)];
-}
-.sidebar .brand {
-  @apply text-[21px];
-}
-
-.sidebar nav {
-  @apply grid gap-1.75;
-}
-.nav-item {
-  @apply [background:none] w-full flex items-center gap-3 border-0 rounded-[9px] text-muted text-left px-3.75 py-3 text-[13px];
-}
-.nav-item > span {
-  @apply text-[22px] w-5.5 text-center leading-none;
-}
-.nav-item:hover {
-  @apply bg-soft;
-}
-.nav-item.active {
-  @apply bg-soft text-accent font-[650];
 }
 
 .sidebar-profile {
@@ -271,16 +236,10 @@
 }
 
 .page-header {
-  @apply flex justify-between items-center gap-5 [border-bottom:1px_solid_var(--border)] pb-6.25;
+  @apply flex flex-wrap items-center justify-between gap-3 [border-bottom:1px_solid_var(--border)] pb-6.25;
 }
 .page-header h1 {
-  @apply text-[30px] tracking-[-0.8px] mb-1.5;
-}
-.page-header p {
-  @apply text-[12px] mb-0;
-}
-.page-header .eyebrow {
-  @apply text-[9px] mb-3.25;
+  @apply text-[30px] tracking-[-0.8px] mb-0;
 }
 
 .placeholder {
@@ -294,9 +253,6 @@
   @apply text-[12px] max-w-[300px];
 }
 
-.workspace-footer {
-  @apply [border-top:1px_solid_var(--border)] pt-4 text-muted text-[10px] flex justify-between;
-}
 @media (max-width: 1000px) {
   .welcome-copy h1 {
     @apply text-[44px];
@@ -310,22 +266,6 @@
     @apply text-[20px];
   }
 
-  .sidebar {
-    @apply px-3 py-6;
-  }
-  .sidebar .brand {
-    @apply text-[17px];
-  }
-  .sidebar .brand-mark {
-    @apply w-7 text-[22px];
-  }
-
-  .workspace-footer span {
-    @apply hidden;
-  }
-  .nav-item {
-    @apply text-[12px] p-2.75;
-  }
   .sidebar-profile strong {
     @apply max-w-22.5;
   }

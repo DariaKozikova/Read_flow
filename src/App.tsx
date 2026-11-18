@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { AccountState, ProfileInput, Theme } from './shared';
-import { Sidebar } from './components/Sidebar';
+import { AppHeader } from './components/AppHeader';
 import { CalendarPage } from './pages/CalendarPage';
 import { HomePage } from './pages/HomePage';
 import { LibraryPage } from './pages/LibraryPage';
@@ -86,8 +86,8 @@ export function App() {
           onSignIn={() => setSignedIn(true)}
         />
       ) : (
-        <div className="grid min-h-screen grid-cols-[245px_minmax(0,1fr)] narrow:grid-cols-[195px_minmax(0,1fr)]">
-          <Sidebar
+        <div className="min-h-screen">
+          <AppHeader
             profile={account.profile}
             page={page}
             onNavigate={setPage}
@@ -95,16 +95,9 @@ export function App() {
             onThemeChange={changeTheme}
             saving={savingTheme}
           />
-          <main className="@container [padding:45px_48px_24px] flex flex-col min-w-0 compact:px-6.25 compact:py-8.75 narrow:px-5 narrow:py-7.5">
+          <main className="@container mx-auto flex min-w-0 max-w-[1500px] flex-col px-5 py-7 min-[1100px]:px-10">
             <header className="page-header">
-              <div>
-                <p className="eyebrow">ТВІЙ ЧИТАЦЬКИЙ ЩОДЕННИК</p>
-                <h1>{pages[page].title}</h1>
-                <p>{pages[page].subtitle}</p>
-              </div>
-              <span className="[border:1px_solid_var(--border)] px-3 py-1.75 rounded-[20px] text-muted text-[10px] whitespace-nowrap compact:hidden">
-                Твій власний темп
-              </span>
+              <h1>{pages[page].title}</h1>
             </header>
             {page === 'home' ? (
               <HomePage dailyGoal={account.profile.dailyGoalMinutes} />
@@ -120,9 +113,6 @@ export function App() {
                 }
               />
             )}
-            <footer className="workspace-footer">
-              ReadingFlow <span>Маленькі кроки. Великі історії.</span>
-            </footer>
           </main>
         </div>
       )}

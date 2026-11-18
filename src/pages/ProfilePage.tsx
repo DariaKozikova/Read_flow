@@ -52,8 +52,8 @@ export function ProfilePage({
       className="grid flex-1 content-start gap-4 py-6 @min-[800px]:grid-cols-2"
       aria-labelledby="profile-details"
     >
-      <div className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6 @min-[800px]:col-span-full">
-        <div className="flex flex-wrap items-center gap-4 rounded-[14px] bg-soft p-4">
+      <div className="min-w-0 rounded-panel border border-border bg-surface p-4 @min-[680px]:p-6 @min-[800px]:col-span-full">
+        <div className="flex flex-wrap items-center gap-4 rounded-panel bg-soft p-4">
           <Avatar value={editing ? avatar : profile.avatar} large />
           <div className="min-w-0 flex-1">
             <h2
@@ -68,7 +68,7 @@ export function ProfilePage({
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+              className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
               onClick={() => {
                 setName(profile.name);
                 setAvatar(profile.avatar);
@@ -130,7 +130,7 @@ export function ProfilePage({
               </button>
               <button
                 type="button"
-                className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+                className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
                 onClick={() => setEditing(false)}
               >
                 Скасувати
@@ -147,7 +147,7 @@ export function ProfilePage({
         )}
       </div>
       <section
-        className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6"
+        className="min-w-0 rounded-panel border border-border bg-surface p-4 @min-[680px]:p-6"
         aria-labelledby="profile-daily-goal"
       >
         <h2 id="profile-daily-goal" className="mb-3 text-[18px] font-semibold">
@@ -164,7 +164,7 @@ export function ProfilePage({
             </p>
             <button
               type="button"
-              className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+              className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
               onClick={retry}
             >
               Спробувати ще раз
@@ -189,7 +189,7 @@ export function ProfilePage({
         )}
       </section>
       <section
-        className="min-w-0 rounded-[20px] border border-border bg-surface p-4 @min-[680px]:p-6"
+        className="min-w-0 rounded-panel border border-border bg-surface p-4 @min-[680px]:p-6"
         aria-labelledby="profile-weekly-reading"
       >
         <h2
@@ -209,7 +209,7 @@ export function ProfilePage({
             </p>
             <button
               type="button"
-              className="rounded-[8px] border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
+              className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
               onClick={retryWeekly}
             >
               Спробувати ще раз
@@ -225,7 +225,7 @@ export function ProfilePage({
               { label: 'Дні з читанням', value: weekly.dayCount },
               { label: 'Книг читали', value: weekly.bookCount },
             ].map(({ label, value }) => (
-              <div key={label} className="rounded-[8px] bg-canvas p-3">
+              <div key={label} className="rounded-control bg-canvas p-3">
                 <dt className="text-[12px] text-muted">{label}</dt>
                 <dd className="m-0 text-[22px] font-semibold tabular-nums">
                   {value}

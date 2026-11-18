@@ -3,7 +3,7 @@ import type { Book } from '../shared';
 import { BookCoverPicker } from './BookCoverPicker';
 
 const buttonStyle =
-  'rounded-[8px] border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
+  'rounded-control border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
 
 export function BookCoverEditor({
   book,

@@ -52,7 +52,6 @@ export function OnboardingPage({
       </header>
       <main className="grid grid-cols-[1fr_440px] max-w-[1080px] [margin:50px_auto_25px] gap-[70px] items-center compact:gap-8.75 compact:grid-cols-[1fr_400px] narrow:grid-cols-[1fr] narrow:mt-8.75 narrow:max-w-[440px]">
         <section className="welcome-copy">
-          <span className="eyebrow">ОДНА СТОРІНКА ЗА РАЗ</span>
           <h1>
             Твої книги.
             <br />
@@ -85,14 +84,8 @@ export function OnboardingPage({
               ✦
             </span>
           </div>
-          <p className="welcome-footnote">
-            Особистий простір, що завжди поруч.
-          </p>
         </section>
         <section className="onboarding-card">
-          <div className="step-label">
-            ПЕРШЕ ЗНАЙОМСТВО <span>01 / 01</span>
-          </div>
           <h2>Створімо твій профіль</h2>
           <p>Лише кілька деталей — і можна починати.</p>
           <form onSubmit={submit}>

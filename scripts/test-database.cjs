@@ -4,6 +4,7 @@ const os = require('node:os');
 const ts = require('typescript');
 const assert = require('node:assert/strict');
 const { DatabaseSync } = require('node:sqlite');
+const { compileFunction } = require('node:vm');
 const schema = fs.readFileSync('database/schema.sql', 'utf8');
 function load(file, imports = {}) {
   const source = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
@@ -13,7 +14,9 @@ function load(file, imports = {}) {
     },
   }).outputText;
   const target = { exports: {} };
-  new Function('require', 'module', 'exports', source)(
+  compileFunction(source, ['require', 'module', 'exports'], {
+    filename: path.resolve(file),
+  })(
     (id) => (id in imports ? imports[id] : require(id)),
     target,
     target.exports,
@@ -249,6 +252,15 @@ try {
   assert.equal(completedEntry.minutes, 1.5);
   assert.equal(completedEntry.startPage, 5);
   assert.equal(completedEntry.endPage, 12);
+  assert.deepEqual(
+    fresh.listCalendarEntries(beforeReading - 1, beforeReading),
+    [],
+  );
+  fresh.startReading(book.id, 12);
+  assert.throws(() => fresh.finishReading(121));
+  const finishedBook = fresh.finishReading(120);
+  assert.equal(finishedBook.current_page, 120);
+  assert.equal(finishedBook.status, 'finished');
   fresh.close();
   console.log(
     'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',

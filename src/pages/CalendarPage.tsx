@@ -18,7 +18,7 @@ const statuses = {
   paused: 'На паузі',
 } satisfies Record<CalendarEntry['status'], string>;
 const control =
-  'rounded-[8px] border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
+  'rounded-control border border-border bg-canvas px-3 py-1.5 text-[13px] hover:bg-soft';
 const visibleBookLimit = 2;
 
 function startOfDay(date: Date) {
@@ -108,7 +108,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
       className="grid flex-1 content-start items-start gap-5 py-6 @min-[720px]:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]"
       aria-label="Календар читання"
     >
-      <div className="min-w-0 rounded-[16px] border border-border bg-surface p-4">
+      <div className="min-w-0 rounded-panel border border-border bg-surface p-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2
             className="m-0 text-[20px] font-semibold capitalize"
@@ -172,7 +172,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
               <button
                 key={index}
                 type="button"
-                className="relative aspect-[2/3] w-full min-w-0 overflow-hidden rounded-[8px] border border-solid border-transparent bg-transparent p-0 text-[13px] leading-4 hover:bg-soft aria-[current=date]:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
+                className="relative aspect-[2/3] w-full min-w-0 overflow-hidden rounded-control border border-solid border-transparent bg-transparent p-0 text-[13px] leading-4 hover:bg-soft aria-[current=date]:border-accent aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-accent-text"
                 aria-label={
                   dateFormat.format(timestamp) +
                   (bookNames ? `, ${bookNames}` : '')
@@ -231,12 +231,12 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
         </div>
       </div>
 
-      <div className="min-w-0 rounded-[16px] border border-border bg-surface p-4">
+      <div className="min-w-0 rounded-panel border border-border bg-surface p-4">
         <h2 className="mb-2 text-[17px] font-semibold first-letter:uppercase">
           {dateFormat.format(selected)}
         </h2>
         {visibleEntries && !visibleEntries.failed && (
-          <div className="mb-4 grid gap-1.5 rounded-[8px] bg-soft px-3 py-2">
+          <div className="mb-4 grid gap-1.5 rounded-control bg-soft px-3 py-2">
             <p className="m-0 text-[13px] font-semibold text-ink">
               Прочитано {readMinutes} хв із {dailyGoal} хв
             </p>
@@ -268,7 +268,7 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
             {selectedEntries.map((entry) => (
               <li
                 key={`${entry.status}-${entry.id}`}
-                className="rounded-[8px] bg-canvas px-3 py-2"
+                className="rounded-control bg-canvas px-3 py-2"
               >
                 <strong className="block wrap-anywhere text-[13px]">
                   {entry.bookTitle}

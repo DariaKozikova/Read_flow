@@ -71,7 +71,7 @@ export function BookCoverPicker({
       {preview && (
         <img
           src={preview}
-          className="h-[126px] w-[84px] rounded-[8px] bg-canvas object-contain"
+          className="h-[126px] w-[84px] rounded-control bg-canvas object-contain"
           alt="Попередній перегляд обкладинки"
           onError={() => {
             setPreview('');

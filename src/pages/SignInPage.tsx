@@ -11,7 +11,6 @@ export function SignInPage({
   return (
     <main className="loading">
       <section className="onboarding-card" aria-labelledby="sign-in-title">
-        <p className="eyebrow">READINGFLOW</p>
         <h1 id="sign-in-title">Вхід до ReadingFlow</h1>
         <div className="sidebar-profile">
           <Avatar value={profile.avatar} />
