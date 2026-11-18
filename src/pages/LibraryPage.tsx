@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { BookCoverEditor } from '../components/BookCoverEditor';
+import { BookDetailsEditor } from '../components/BookDetailsEditor';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
 import type { ActiveReading, Book, BookStatus } from '../shared';
@@ -200,7 +200,13 @@ export function LibraryPage() {
                     {book.current_page} / {book.total_pages} стор.
                   </span>
                 </div>
-                <BookCoverEditor book={book} onUpdated={updateBook} />
+                <BookDetailsEditor
+                  book={book}
+                  onUpdated={(updated) => {
+                    setQuery('');
+                    updateBook(updated);
+                  }}
+                />
                 {readingBook === book.id ? (
                   <form
                     key={active ? 'finish' : 'start'}

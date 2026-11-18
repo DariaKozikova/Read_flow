@@ -201,6 +201,54 @@ try {
     fresh.addBook({ title: 'Книга', author: '', total_pages: 0 }),
   );
   assert.deepEqual(fresh.listBooks(), [book]);
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, { title: ' ', author: '' }),
+  );
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, { title: 'a'.repeat(301), author: '' }),
+  );
+  assert.throws(() =>
+    fresh.updateBookDetails(99999, { title: 'Книга', author: '' }),
+  );
+  const edited = fresh.updateBookDetails(book.id, {
+    title: ' Нова назва ',
+    author: ' Новий автор ',
+  });
+  assert.deepEqual(edited, {
+    ...book,
+    title: 'Нова назва',
+    author: 'Новий автор',
+  });
+  assert.deepEqual(fresh.listBooks(), [edited]);
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, {
+      title: 'Невдала зміна',
+      author: '',
+      cover: Buffer.from('bad'),
+    }),
+  );
+  assert.deepEqual(fresh.listBooks(), [edited]);
+  const withCover = fresh.updateBookDetails(book.id, {
+    title: edited.title,
+    author: edited.author,
+    cover: coveredBook.cover,
+  });
+  assert.equal(withCover.coverUrl, savedCover.coverUrl);
+  assert.equal(
+    fresh.updateBookDetails(book.id, {
+      title: edited.title,
+      author: edited.author,
+    }).coverUrl,
+    withCover.coverUrl,
+  );
+  assert.equal(
+    fresh.updateBookDetails(book.id, {
+      title: edited.title,
+      author: edited.author,
+      cover: null,
+    }).coverUrl,
+    null,
+  );
   const beforeReading = Date.now();
   assert.throws(() => fresh.startReading(book.id, 0));
   const session = fresh.startReading(book.id, 5);

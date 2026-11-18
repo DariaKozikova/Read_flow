@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import type { BookDetailsInput } from './shared';
 import schema from '../database/schema.sql?raw';
 import type { ActiveReading, Book, CalendarEntry, NewBook } from './shared';
 import {
@@ -194,6 +195,35 @@ export function openDatabase(filename: string) {
           .prepare(`SELECT ${bookColumns} FROM books WHERE id = ?`)
           .get(result.lastInsertRowid) as unknown as BookRow,
       );
+    },
+    updateBookDetails: (id: number, input: BookDetailsInput) => {
+      if (
+        !Number.isSafeInteger(id) ||
+        id < 1 ||
+        !input ||
+        typeof input.title !== 'string' ||
+        !input.title.trim() ||
+        input.title.trim().length > 300 ||
+        typeof input.author !== 'string' ||
+        input.author.length > 300
+      )
+        throw new Error('Вкажи назву та автора до 300 символів.');
+      if (input.cover !== undefined) validateCover(input.cover);
+      const row = db
+        .prepare(
+          `UPDATE books SET title = ?, author = ?,
+           cover = CASE WHEN ? THEN ? ELSE cover END
+           WHERE id = ? RETURNING ${bookColumns}`,
+        )
+        .get(
+          input.title.trim(),
+          input.author.trim(),
+          Number(input.cover !== undefined),
+          input.cover ?? null,
+          id,
+        );
+      if (!row) throw new Error('Книгу не знайдено.');
+      return toBook(row as unknown as BookRow);
     },
     updateBookCover: (id: number, cover: Uint8Array | null) => {
       if (!Number.isSafeInteger(id) || id < 1)

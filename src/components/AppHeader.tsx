@@ -21,27 +21,24 @@ export function AppHeader({
   saving: boolean;
 }) {
   return (
-    <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-2.5 min-[1100px]:px-10">
+    <header className="mx-3 mt-3 rounded-[16px] border border-border bg-surface min-[1100px]:mx-6">
+      <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-x-8 gap-y-2 px-4 py-2 min-[1100px]:px-6">
         <button
           type="button"
-          className="brand border-0 bg-transparent p-0 text-accent"
+          className="border-0 bg-transparent p-0 text-[25px] font-extrabold tracking-[-1px] text-ink"
           onClick={() => onNavigate('home')}
         >
-          <span className="brand-mark" aria-hidden="true">
-            ▥
-          </span>
           ReadingFlow
         </button>
         <nav
-          className="flex flex-wrap items-center gap-x-5"
+          className="flex flex-1 flex-wrap items-center justify-center gap-x-7"
           aria-label="Основна навігація"
         >
           {sections.map((id) => (
             <button
               key={id}
               type="button"
-              className="border-0 border-b-2 border-solid border-transparent bg-transparent px-0 py-2 font-semibold hover:text-accent aria-[current=page]:border-accent aria-[current=page]:text-accent"
+              className="border-0 border-b-2 border-solid border-transparent bg-transparent px-0 py-2 text-[14px] font-semibold hover:border-border aria-[current=page]:border-ink"
               aria-current={page === id ? 'page' : undefined}
               onClick={() => onNavigate(id)}
             >
