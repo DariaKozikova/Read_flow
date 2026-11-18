@@ -34,6 +34,7 @@ export function BookDetailsEditor({
       const updated = await window.api.updateBookDetails(book.id, {
         title,
         author: String(fields.get('author')).trim(),
+        total_pages: Number(fields.get('totalPages')),
         cover: selectedCover
           ? new Uint8Array(await selectedCover.arrayBuffer())
           : removeCover
@@ -43,7 +44,9 @@ export function BookDetailsEditor({
       onUpdated(updated);
       setEditing(false);
     } catch {
-      setError('Не вдалося зберегти зміни. Спробуй ще раз.');
+      setError(
+        'Не вдалося зберегти зміни. Перевір кількість сторінок і спробуй ще раз.',
+      );
     } finally {
       setSaving(false);
     }
@@ -86,6 +89,21 @@ export function BookDetailsEditor({
           Автор (необов’язково)
           <input name="author" defaultValue={book.author} maxLength={300} />
         </label>
+        <label className="grid gap-1 text-[13px]">
+          Кількість сторінок
+          <input
+            name="totalPages"
+            type="number"
+            min={Math.max(1, book.current_page)}
+            max={1000000}
+            step={1}
+            defaultValue={book.total_pages}
+            required
+          />
+        </label>
+        <p className="m-0 text-[12px]">
+          Кількість сторінок має охоплювати поточний прогрес і збережені сесії.
+        </p>
         {!selectedCover && book.coverUrl && !removeCover && (
           <img
             src={book.coverUrl}

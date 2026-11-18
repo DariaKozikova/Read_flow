@@ -209,20 +209,53 @@ export function openDatabase(filename: string) {
       )
         throw new Error('Вкажи назву та автора до 300 символів.');
       if (input.cover !== undefined) validateCover(input.cover);
+      if (
+        input.total_pages !== undefined &&
+        (!Number.isSafeInteger(input.total_pages) ||
+          input.total_pages < 1 ||
+          input.total_pages > 1000000)
+      )
+        throw new Error('Вкажи кількість сторінок від 1 до 1 000 000.');
       const row = db
         .prepare(
           `UPDATE books SET title = ?, author = ?,
-           cover = CASE WHEN ? THEN ? ELSE cover END
-           WHERE id = ? RETURNING ${bookColumns}`,
+           cover = CASE WHEN ? THEN ? ELSE cover END,
+           total_pages = COALESCE(?, total_pages),
+           status = CASE
+             WHEN ? IS NULL THEN status
+             WHEN current_page = ? THEN 'finished'
+             WHEN status = 'finished' THEN 'reading'
+             ELSE status END
+           WHERE id = ?
+             AND COALESCE(?, total_pages) >= current_page
+             AND NOT EXISTS (
+               SELECT 1 FROM reading_sessions
+               WHERE book_id = books.id
+                 AND MAX(start_page, end_page) > COALESCE(?, books.total_pages)
+             )
+             AND NOT EXISTS (
+               SELECT 1 FROM active_session
+               WHERE book_id = books.id AND start_page > COALESCE(?, books.total_pages)
+             )
+           RETURNING ${bookColumns}`,
         )
         .get(
           input.title.trim(),
           input.author.trim(),
           Number(input.cover !== undefined),
           input.cover ?? null,
+          input.total_pages ?? null,
+          input.total_pages ?? null,
+          input.total_pages ?? null,
           id,
+          input.total_pages ?? null,
+          input.total_pages ?? null,
+          input.total_pages ?? null,
         );
-      if (!row) throw new Error('Книгу не знайдено.');
+      if (!row)
+        throw new Error(
+          'Книгу не знайдено або кількість сторінок менша за збережені сторінки читання.',
+        );
       return toBook(row as unknown as BookRow);
     },
     updateBookCover: (id: number, cover: Uint8Array | null) => {
