@@ -188,6 +188,11 @@ export function LibraryPage() {
                     {book.author}
                   </p>
                 )}
+                {book.description && (
+                  <p className="mb-3 whitespace-pre-wrap wrap-anywhere text-[13px]">
+                    {book.description}
+                  </p>
+                )}
                 <div className="flex flex-wrap items-center gap-2 text-[12px]">
                   <span className="rounded-control bg-soft px-2 py-1 font-medium text-accent">
                     {active?.bookId === book.id

@@ -59,7 +59,8 @@
     @apply m-0 bg-canvas font-sans text-[15px] leading-normal text-ink;
   }
   button,
-  input {
+  input,
+  textarea {
     @apply [font:inherit];
   }
   button {
@@ -69,7 +70,8 @@
     @apply cursor-wait opacity-55;
   }
   button:focus-visible,
-  input:focus-visible {
+  input:focus-visible,
+  textarea:focus-visible {
     @apply [outline:3px_solid_var(--accent)] [outline-offset:4px];
   }
   h1,
@@ -80,8 +82,12 @@
   p {
     @apply text-muted;
   }
-  input {
+  input,
+  textarea {
     @apply w-full px-3.75 py-3.25 [border:1px_solid_var(--border)] rounded-control bg-input text-ink;
+  }
+  textarea {
+    @apply min-w-0 resize-y;
   }
   fieldset {
     @apply border-0 p-0 m-0 min-w-0;

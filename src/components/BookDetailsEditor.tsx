@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { Book } from '../shared';
+import { maxBookDescriptionLength } from '../shared';
 import { BookCoverPicker } from './BookCoverPicker';
 
 const buttonClass =
@@ -35,6 +36,7 @@ export function BookDetailsEditor({
         title,
         author: String(fields.get('author')).trim(),
         total_pages: Number(fields.get('totalPages')),
+        description: String(fields.get('description')).trim(),
         cover: selectedCover
           ? new Uint8Array(await selectedCover.arrayBuffer())
           : removeCover
@@ -104,6 +106,15 @@ export function BookDetailsEditor({
         <p className="m-0 text-[12px]">
           Кількість сторінок має охоплювати поточний прогрес і збережені сесії.
         </p>
+        <label className="grid gap-1 text-[13px]">
+          Опис (необов’язково)
+          <textarea
+            name="description"
+            rows={3}
+            maxLength={maxBookDescriptionLength}
+            defaultValue={book.description}
+          />
+        </label>
         {!selectedCover && book.coverUrl && !removeCover && (
           <img
             src={book.coverUrl}

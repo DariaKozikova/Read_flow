@@ -5,13 +5,14 @@ import type { ActiveReading, Book, CalendarEntry, NewBook } from './shared';
 import {
   avatars,
   maxBookCoverBytes,
+  maxBookDescriptionLength,
   type AccountState,
   type ProfileInput,
   type Theme,
 } from './shared';
 
 const bookColumns =
-  'id, title, author, total_pages, current_page, status, cover';
+  'id, title, author, total_pages, current_page, status, cover, description';
 type BookRow = Omit<Book, 'coverUrl'> & { cover: Uint8Array | null };
 const activeReadingColumns =
   'book_id AS bookId, start_page AS startPage, accumulated_ms AS accumulatedMs, running_since AS runningSince';
@@ -47,6 +48,15 @@ function validateCover(cover: Uint8Array | null) {
       !coverType(cover))
   )
     throw new Error('Вибери обкладинку JPG, PNG або WebP до 5 МБ.');
+}
+
+function validateDescription(description: unknown) {
+  if (
+    description !== undefined &&
+    (typeof description !== 'string' ||
+      description.length > maxBookDescriptionLength)
+  )
+    throw new Error('Опис має містити до 5000 символів.');
 }
 
 function validProfileDetails(
@@ -179,16 +189,18 @@ export function openDatabase(filename: string) {
         );
       }
       const { cover } = input;
+      validateDescription(input.description);
       validateCover(cover ?? null);
       const result = db
         .prepare(
-          'INSERT INTO books (title, author, total_pages, cover) VALUES (?, ?, ?, ?)',
+          'INSERT INTO books (title, author, total_pages, cover, description) VALUES (?, ?, ?, ?, ?)',
         )
         .run(
           input.title.trim(),
           input.author.trim(),
           input.total_pages,
           cover ?? null,
+          input.description?.trim() ?? '',
         );
       return toBook(
         db
@@ -209,6 +221,7 @@ export function openDatabase(filename: string) {
       )
         throw new Error('Вкажи назву та автора до 300 символів.');
       if (input.cover !== undefined) validateCover(input.cover);
+      validateDescription(input.description);
       if (
         input.total_pages !== undefined &&
         (!Number.isSafeInteger(input.total_pages) ||
@@ -218,7 +231,7 @@ export function openDatabase(filename: string) {
         throw new Error('Вкажи кількість сторінок від 1 до 1 000 000.');
       const row = db
         .prepare(
-          `UPDATE books SET title = ?, author = ?,
+          `UPDATE books SET title = ?, author = ?, description = COALESCE(?, description),
            cover = CASE WHEN ? THEN ? ELSE cover END,
            total_pages = COALESCE(?, total_pages),
            status = CASE
@@ -242,6 +255,7 @@ export function openDatabase(filename: string) {
         .get(
           input.title.trim(),
           input.author.trim(),
+          input.description?.trim() ?? null,
           Number(input.cover !== undefined),
           input.cover ?? null,
           input.total_pages ?? null,

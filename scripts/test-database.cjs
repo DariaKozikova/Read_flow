@@ -61,6 +61,7 @@ try {
   assert.equal(db.getAccount().profile, null);
   assert.equal(db.listBooks()[0].title, 'Наявна книга');
   assert.equal(db.listBooks()[0].coverUrl, null);
+  assert.equal(db.listBooks()[0].description, '');
   assert.throws(() =>
     db.createProfile({ name: ' ', avatar: 'leaf', dailyGoalMinutes: 30 }),
   );
@@ -108,12 +109,14 @@ try {
     author: '',
     total_pages: 100,
     cover: Buffer.from(coverBase64, 'base64'),
+    description: 'Опис книги\nДругий рядок',
   };
   assert.throws(() =>
     db.addBook({ ...coveredBook, cover: Buffer.from('bad') }),
   );
   const savedCover = db.addBook(coveredBook);
   assert.equal(savedCover.coverUrl, `data:image/png;base64,${coverBase64}`);
+  assert.equal(savedCover.description, coveredBook.description);
   db.setTheme('light');
   assert.equal(db.getAccount().theme, 'light');
   const bookId = db.listBooks()[1].id;
@@ -220,6 +223,32 @@ try {
     author: 'Новий автор',
   });
   assert.deepEqual(fresh.listBooks(), [edited]);
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, {
+      title: edited.title,
+      author: edited.author,
+      description: 'a'.repeat(5001),
+    }),
+  );
+  assert.equal(fresh.listBooks()[0].description, '');
+  const described = fresh.updateBookDetails(book.id, {
+    title: edited.title,
+    author: edited.author,
+    description: ' Опис\nДругий рядок ',
+  });
+  assert.equal(described.description, 'Опис\nДругий рядок');
+  assert.equal(
+    fresh.updateBookDetails(book.id, {
+      title: edited.title,
+      author: edited.author,
+    }).description,
+    described.description,
+  );
+  fresh.updateBookDetails(book.id, {
+    title: edited.title,
+    author: edited.author,
+    description: '',
+  });
   assert.throws(() =>
     fresh.updateBookDetails(book.id, {
       title: 'Невдала зміна',

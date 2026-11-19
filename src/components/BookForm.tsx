@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { Book } from '../shared';
+import { maxBookDescriptionLength } from '../shared';
 import { BookCoverPicker } from './BookCoverPicker';
 
 export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
@@ -25,6 +26,7 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
         title,
         author: String(fields.get('author')).trim(),
         total_pages: Number(fields.get('totalPages')),
+        description: String(fields.get('description')).trim(),
         cover:
           cover instanceof File && cover.name
             ? new Uint8Array(await cover.arrayBuffer())
@@ -71,6 +73,14 @@ export function BookForm({ onAdded }: { onAdded: (book: Book) => void }) {
             max={1000000}
             step={1}
             required
+          />
+        </label>
+        <label className="grid gap-1 text-[13px] min-[1000px]:col-span-full">
+          Опис (необов’язково)
+          <textarea
+            name="description"
+            rows={3}
+            maxLength={maxBookDescriptionLength}
           />
         </label>
         <BookCoverPicker key={formVersion} />
