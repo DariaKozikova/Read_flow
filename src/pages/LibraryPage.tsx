@@ -3,7 +3,7 @@ import { BookDetailsEditor } from '../components/BookDetailsEditor';
 import { BookDeleteButton } from '../components/BookDeleteButton';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
-import type { ActiveReading, Book } from '../shared';
+import type { ActiveReading, Book, BookStatus } from '../shared';
 import { bookStatusLabels } from '../shared';
 
 type LibraryState =
@@ -13,6 +13,7 @@ type LibraryState =
 export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
   const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all');
   const [attempt, setAttempt] = useState(0);
   const [active, setActive] = useState<ActiveReading | null>(null);
   const [readingBook, setReadingBook] = useState<number>();
@@ -22,10 +23,11 @@ export function LibraryPage() {
   const filteredBooks =
     state.status === 'loaded'
       ? state.books.filter(
-          ({ id, title, author }) =>
+          ({ id, title, author, status }) =>
             id === readingBook ||
-            title.toLocaleLowerCase('uk-UA').includes(search) ||
-            author.toLocaleLowerCase('uk-UA').includes(search),
+            ((statusFilter === 'all' || status === statusFilter) &&
+              (title.toLocaleLowerCase('uk-UA').includes(search) ||
+                author.toLocaleLowerCase('uk-UA').includes(search))),
         )
       : [];
 
@@ -105,20 +107,52 @@ export function LibraryPage() {
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
       {state.status === 'loaded' && (
-        <label className="mb-4 grid max-w-[440px] gap-1 text-[13px]">
-          Пошук книг
-          <input
-            type="search"
-            placeholder="Назва або автор"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
+        <div className="mb-4 flex flex-wrap items-end gap-3">
+          <label className="grid min-w-0 flex-1 basis-[240px] gap-1 text-[13px]">
+            Пошук книг
+            <input
+              type="search"
+              placeholder="Назва або автор"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <label className="grid gap-1 text-[13px]">
+            Статус
+            <select
+              className="rounded-control border border-border bg-input px-3 py-3 text-ink [font:inherit]"
+              value={statusFilter}
+              onChange={(event) =>
+                setStatusFilter(event.target.value as BookStatus | 'all')
+              }
+            >
+              <option value="all">Усі книги</option>
+              {(Object.keys(bookStatusLabels) as BookStatus[]).map((status) => (
+                <option key={status} value={status}>
+                  {bookStatusLabels[status]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {(query || statusFilter !== 'all') && (
+            <button
+              type="button"
+              className="rounded-control border border-border bg-surface px-3 py-3 text-[13px] hover:bg-soft"
+              onClick={() => {
+                setQuery('');
+                setStatusFilter('all');
+              }}
+            >
+              Скинути фільтри
+            </button>
+          )}
+        </div>
       )}
       {state.status === 'loaded' && (
         <BookForm
           onAdded={(book) => {
             setQuery('');
+            setStatusFilter('all');
             setState((current) =>
               current.status === 'loaded'
                 ? { status: 'loaded', books: [book, ...current.books] }
@@ -158,7 +192,7 @@ export function LibraryPage() {
             role="status"
             className="rounded-panel border border-border bg-surface p-4 text-[13px]"
           >
-            Книг за цим запитом не знайдено.
+            Книг за вибраними умовами не знайдено.
           </p>
         ) : (
           <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,290px),1fr))] gap-3 p-0">
@@ -200,31 +234,34 @@ export function LibraryPage() {
                     {book.current_page} / {book.total_pages} стор.
                   </span>
                 </div>
-                <BookDetailsEditor
-                  book={book}
-                  readingActive={active?.bookId === book.id}
-                  onUpdated={(updated) => {
-                    setQuery('');
-                    updateBook(updated);
-                  }}
-                />
-                <BookDeleteButton
-                  book={book}
-                  active={active?.bookId === book.id}
-                  onDeleted={(id) => {
-                    setState((current) =>
-                      current.status === 'loaded'
-                        ? {
-                            ...current,
-                            books: current.books.filter(
-                              (item) => item.id !== id,
-                            ),
-                          }
-                        : current,
-                    );
-                    if (readingBook === id) setReadingBook(undefined);
-                  }}
-                />
+                <div className="mt-3 grid grid-cols-2 items-start gap-2">
+                  <BookDetailsEditor
+                    book={book}
+                    readingActive={active?.bookId === book.id}
+                    onUpdated={(updated) => {
+                      setQuery('');
+                      setStatusFilter('all');
+                      updateBook(updated);
+                    }}
+                  />
+                  <BookDeleteButton
+                    book={book}
+                    active={active?.bookId === book.id}
+                    onDeleted={(id) => {
+                      setState((current) =>
+                        current.status === 'loaded'
+                          ? {
+                              ...current,
+                              books: current.books.filter(
+                                (item) => item.id !== id,
+                              ),
+                            }
+                          : current,
+                      );
+                      if (readingBook === id) setReadingBook(undefined);
+                    }}
+                  />
+                </div>
                 {readingBook === book.id ? (
                   <form
                     key={active ? 'finish' : 'start'}
