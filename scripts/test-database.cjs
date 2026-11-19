@@ -371,7 +371,32 @@ try {
   });
   assert.equal(resized.status, 'finished');
   assert.equal(resized.total_pages, 140);
+  const statusInput = { title: resized.title, author: resized.author };
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, { ...statusInput, status: 'unknown' }),
+  );
+  assert.equal(
+    fresh.updateBookDetails(book.id, { ...statusInput, status: 'paused' })
+      .status,
+    'paused',
+  );
+  assert.equal(
+    fresh.updateBookDetails(book.id, { ...statusInput, status: 'planned' })
+      .current_page,
+    140,
+  );
+  assert.equal(
+    fresh.updateBookDetails(book.id, {
+      ...statusInput,
+      status: 'finished',
+      total_pages: 150,
+    }).current_page,
+    150,
+  );
   fresh.startReading(book.id, 140);
+  assert.throws(() =>
+    fresh.updateBookDetails(book.id, { ...statusInput, status: 'reading' }),
+  );
   assert.throws(() => fresh.deleteBook(book.id));
   assert.equal(fresh.listBooks().length, 1);
   fresh.finishReading(140);

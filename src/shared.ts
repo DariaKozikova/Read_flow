@@ -1,4 +1,10 @@
 export type BookStatus = 'planned' | 'reading' | 'paused' | 'finished';
+export const bookStatusLabels: Record<BookStatus, string> = {
+  planned: 'У планах',
+  reading: 'Читаю',
+  paused: 'На паузі',
+  finished: 'Прочитано',
+};
 export const maxBookCoverBytes = 5 * 1024 * 1024;
 export const maxBookDescriptionLength = 5000;
 export const bookCoverTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -20,6 +26,7 @@ export interface NewBook {
   description?: string;
 }
 export type BookDetailsInput = Pick<NewBook, 'title' | 'author'> & {
+  status?: BookStatus;
   cover?: Uint8Array | null;
   total_pages?: number;
   description?: string;

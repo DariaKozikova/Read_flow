@@ -3,14 +3,8 @@ import { BookDetailsEditor } from '../components/BookDetailsEditor';
 import { BookDeleteButton } from '../components/BookDeleteButton';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
-import type { ActiveReading, Book, BookStatus } from '../shared';
-
-const statusLabels: Record<BookStatus, string> = {
-  planned: 'У планах',
-  reading: 'Читаю',
-  paused: 'На паузі',
-  finished: 'Прочитано',
-};
+import type { ActiveReading, Book } from '../shared';
+import { bookStatusLabels } from '../shared';
 
 type LibraryState =
   | { status: 'loading' | 'error' }
@@ -200,7 +194,7 @@ export function LibraryPage() {
                       ? active.runningSince === null
                         ? 'На паузі'
                         : 'Читаю зараз'
-                      : statusLabels[book.status]}
+                      : bookStatusLabels[book.status]}
                   </span>
                   <span className="text-muted">
                     {book.current_page} / {book.total_pages} стор.
@@ -208,6 +202,7 @@ export function LibraryPage() {
                 </div>
                 <BookDetailsEditor
                   book={book}
+                  readingActive={active?.bookId === book.id}
                   onUpdated={(updated) => {
                     setQuery('');
                     updateBook(updated);

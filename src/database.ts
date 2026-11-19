@@ -5,6 +5,7 @@ import type { ActiveReading, Book, CalendarEntry, NewBook } from './shared';
 import {
   avatars,
   maxBookCoverBytes,
+  bookStatusLabels,
   maxBookDescriptionLength,
   type AccountState,
   type ProfileInput,
@@ -235,6 +236,12 @@ export function openDatabase(filename: string) {
       if (input.cover !== undefined) validateCover(input.cover);
       validateDescription(input.description);
       if (
+        input.status !== undefined &&
+        (typeof input.status !== 'string' ||
+          !Object.hasOwn(bookStatusLabels, input.status))
+      )
+        throw new Error('Невідомий статус книги.');
+      if (
         input.total_pages !== undefined &&
         (!Number.isSafeInteger(input.total_pages) ||
           input.total_pages < 1 ||
@@ -246,12 +253,17 @@ export function openDatabase(filename: string) {
           `UPDATE books SET title = ?, author = ?, description = COALESCE(?, description),
            cover = CASE WHEN ? THEN ? ELSE cover END,
            total_pages = COALESCE(?, total_pages),
+           current_page = CASE WHEN ? = 'finished' THEN COALESCE(?, total_pages) ELSE current_page END,
            status = CASE
+             WHEN ? IS NOT NULL THEN ?
              WHEN ? IS NULL THEN status
              WHEN current_page = ? THEN 'finished'
              WHEN status = 'finished' THEN 'reading'
              ELSE status END
            WHERE id = ?
+             AND (? IS NULL OR ? = status OR NOT EXISTS (
+               SELECT 1 FROM active_session WHERE book_id = books.id
+             ))
              AND COALESCE(?, total_pages) >= current_page
              AND NOT EXISTS (
                SELECT 1 FROM reading_sessions
@@ -271,9 +283,15 @@ export function openDatabase(filename: string) {
           Number(input.cover !== undefined),
           input.cover ?? null,
           input.total_pages ?? null,
+          input.status ?? null,
+          input.total_pages ?? null,
+          input.status ?? null,
+          input.status ?? null,
           input.total_pages ?? null,
           input.total_pages ?? null,
           id,
+          input.status ?? null,
+          input.status ?? null,
           input.total_pages ?? null,
           input.total_pages ?? null,
           input.total_pages ?? null,

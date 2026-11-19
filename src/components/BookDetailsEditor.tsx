@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { Book } from '../shared';
+import { bookStatusLabels, type Book, type BookStatus } from '../shared';
 import { maxBookDescriptionLength } from '../shared';
 import { BookCoverPicker } from './BookCoverPicker';
 
@@ -9,9 +9,11 @@ const buttonClass =
 export function BookDetailsEditor({
   book,
   onUpdated,
+  readingActive,
 }: {
   book: Book;
   onUpdated: (book: Book) => void;
+  readingActive: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,6 +38,9 @@ export function BookDetailsEditor({
         title,
         author: String(fields.get('author')).trim(),
         total_pages: Number(fields.get('totalPages')),
+        status: readingActive
+          ? undefined
+          : (String(fields.get('status')) as BookStatus),
         description: String(fields.get('description')).trim(),
         cover: selectedCover
           ? new Uint8Array(await selectedCover.arrayBuffer())
@@ -78,6 +83,26 @@ export function BookDetailsEditor({
       onInput={() => setError('')}
     >
       <fieldset disabled={saving} className="grid gap-2">
+        <label className="grid gap-1 text-[13px]">
+          Статус
+          <select
+            name="status"
+            defaultValue={book.status}
+            disabled={readingActive}
+            className="w-full rounded-control border border-border bg-input px-3 py-2 text-ink [font:inherit]"
+          >
+            {(Object.keys(bookStatusLabels) as BookStatus[]).map((status) => (
+              <option key={status} value={status}>
+                {bookStatusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="m-0 text-[12px]">
+          {readingActive
+            ? 'Заверши сесію читання, щоб змінити статус.'
+            : 'Статус «Прочитано» встановлює прогрес на останню сторінку.'}
+        </p>
         <label className="grid gap-1 text-[13px]">
           Назва
           <input
