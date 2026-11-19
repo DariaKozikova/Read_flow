@@ -100,6 +100,10 @@ else {
         verify(event);
         return database!.addBook(input);
       });
+      ipcMain.handle('books:delete', (event, id: number) => {
+        verify(event);
+        database!.deleteBook(id);
+      });
       ipcMain.handle(
         'books:update-details',
         (event, id: number, input: BookDetailsInput) => {

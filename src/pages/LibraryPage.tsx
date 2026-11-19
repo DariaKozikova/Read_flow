@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { BookDetailsEditor } from '../components/BookDetailsEditor';
+import { BookDeleteButton } from '../components/BookDeleteButton';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
 import type { ActiveReading, Book, BookStatus } from '../shared';
@@ -210,6 +211,23 @@ export function LibraryPage() {
                   onUpdated={(updated) => {
                     setQuery('');
                     updateBook(updated);
+                  }}
+                />
+                <BookDeleteButton
+                  book={book}
+                  active={active?.bookId === book.id}
+                  onDeleted={(id) => {
+                    setState((current) =>
+                      current.status === 'loaded'
+                        ? {
+                            ...current,
+                            books: current.books.filter(
+                              (item) => item.id !== id,
+                            ),
+                          }
+                        : current,
+                    );
+                    if (readingBook === id) setReadingBook(undefined);
                   }}
                 />
                 {readingBook === book.id ? (

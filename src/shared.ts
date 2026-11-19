@@ -47,6 +47,7 @@ export interface ReadingFlowApi {
   setTheme: (theme: Theme) => Promise<void>;
   listBooks: () => Promise<Book[]>;
   addBook: (book: NewBook) => Promise<Book>;
+  deleteBook: (id: number) => Promise<void>;
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
   updateBookDetails: (id: number, input: BookDetailsInput) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;

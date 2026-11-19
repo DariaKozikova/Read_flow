@@ -208,6 +208,18 @@ export function openDatabase(filename: string) {
           .get(result.lastInsertRowid) as unknown as BookRow,
       );
     },
+    deleteBook: (id: number) => {
+      if (!Number.isSafeInteger(id) || id < 1)
+        throw new Error('Некоректна книга.');
+      const result = db
+        .prepare(
+          `DELETE FROM books WHERE id = ?
+         AND NOT EXISTS (SELECT 1 FROM active_session WHERE book_id = books.id)`,
+        )
+        .run(id);
+      if (result.changes !== 1)
+        throw new Error('Книгу не знайдено або для неї триває сесія читання.');
+    },
     updateBookDetails: (id: number, input: BookDetailsInput) => {
       if (
         !Number.isSafeInteger(id) ||

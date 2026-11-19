@@ -371,6 +371,20 @@ try {
   });
   assert.equal(resized.status, 'finished');
   assert.equal(resized.total_pages, 140);
+  fresh.startReading(book.id, 140);
+  assert.throws(() => fresh.deleteBook(book.id));
+  assert.equal(fresh.listBooks().length, 1);
+  fresh.finishReading(140);
+  assert.throws(() => fresh.deleteBook(0));
+  assert.throws(() => fresh.deleteBook(99999));
+  fresh.deleteBook(book.id);
+  assert.deepEqual(fresh.listBooks(), []);
+  assert.deepEqual(
+    fresh.listCalendarEntries(beforeReading, Date.now() + 1),
+    [],
+  );
+  assert.equal(fresh.getActiveReading(), null);
+  assert.throws(() => fresh.deleteBook(book.id));
   fresh.close();
   console.log(
     'PASS: migration, profile validation and persistence, themes, book creation, and calendar entries.',

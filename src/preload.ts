@@ -14,6 +14,7 @@ const api: ReadingFlowApi = {
   setTheme: (theme) => ipcRenderer.invoke('settings:theme', theme),
   listBooks: () => ipcRenderer.invoke('books:list'),
   addBook: (book: NewBook) => ipcRenderer.invoke('books:add', book),
+  deleteBook: (id) => ipcRenderer.invoke('books:delete', id),
   updateBookDetails: (id, input) =>
     ipcRenderer.invoke('books:update-details', id, input),
   updateBookCover: (id, cover) =>
