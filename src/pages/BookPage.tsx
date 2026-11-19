@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BookNotes } from '../components/BookNotes';
 import { bookStatusLabels, type Book, type CalendarEntry } from '../shared';
 
 const dateFormat = new Intl.DateTimeFormat('uk-UA', {
@@ -10,7 +11,7 @@ const minutesFormat = new Intl.NumberFormat('uk-UA', {
 });
 
 export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
-  const [tab, setTab] = useState<'overview' | 'history'>('overview');
+  const [tab, setTab] = useState<'overview' | 'notes' | 'history'>('overview');
   const [sessions, setSessions] = useState<CalendarEntry[] | null>();
   const [attempt, setAttempt] = useState(0);
 
@@ -68,7 +69,7 @@ export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
           role="group"
           aria-label="Розділи книги"
         >
-          {(['overview', 'history'] as const).map((value) => (
+          {(['overview', 'notes', 'history'] as const).map((value) => (
             <button
               type="button"
               key={value}
@@ -76,7 +77,13 @@ export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
               className="border-0 border-b-2 border-solid border-transparent bg-transparent px-0 py-2 aria-pressed:border-accent aria-pressed:font-bold"
               onClick={() => setTab(value)}
             >
-              {value === 'overview' ? 'Огляд' : 'Історія читання'}
+              {
+                {
+                  overview: 'Огляд',
+                  notes: 'Нотатки',
+                  history: 'Історія читання',
+                }[value]
+              }
             </button>
           ))}
         </div>
@@ -84,6 +91,12 @@ export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
           <p className="mb-0 mt-4 whitespace-pre-wrap wrap-anywhere text-[14px]">
             {book.description || 'Опис ще не додано.'}
           </p>
+        ) : tab === 'notes' ? (
+          <BookNotes
+            key={book.id}
+            bookId={book.id}
+            totalPages={book.total_pages}
+          />
         ) : sessions === undefined ? (
           <p role="status" className="mt-4">
             Завантажуємо історію…

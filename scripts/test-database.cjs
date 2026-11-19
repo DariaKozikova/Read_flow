@@ -279,6 +279,23 @@ try {
     null,
   );
   const beforeReading = Date.now();
+  assert.deepEqual(fresh.listBookNotes(book.id), []);
+  assert.throws(() =>
+    fresh.addBookNote(book.id, { content: ' ', pageNumber: null }),
+  );
+  assert.throws(() =>
+    fresh.addBookNote(book.id, { content: 'Текст', pageNumber: 121 }),
+  );
+  assert.throws(() =>
+    fresh.addBookNote(99999, { content: 'Текст', pageNumber: null }),
+  );
+  const note = fresh.addBookNote(book.id, {
+    content: ' Перша думка\nДругий рядок ',
+    pageNumber: 5,
+  });
+  assert.equal(note.content, 'Перша думка\nДругий рядок');
+  assert.equal(note.pageNumber, 5);
+  assert.deepEqual(fresh.listBookNotes(book.id), [note]);
   assert.throws(() => fresh.startReading(book.id, 0));
   const session = fresh.startReading(book.id, 5);
   assert.deepEqual(session, {
@@ -406,6 +423,7 @@ try {
   assert.throws(() => fresh.deleteBook(0));
   assert.throws(() => fresh.deleteBook(99999));
   fresh.deleteBook(book.id);
+  assert.deepEqual(fresh.listBookNotes(book.id), []);
   assert.deepEqual(fresh.listBooks(), []);
   assert.deepEqual(
     fresh.listCalendarEntries(beforeReading, Date.now() + 1),

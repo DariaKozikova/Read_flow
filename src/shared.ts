@@ -1,4 +1,15 @@
 export type BookStatus = 'planned' | 'reading' | 'paused' | 'finished';
+export interface BookNote {
+  id: number;
+  bookId: number;
+  content: string;
+  pageNumber: number | null;
+  createdAt: number;
+}
+export interface NewBookNote {
+  content: string;
+  pageNumber: number | null;
+}
 export const bookStatusLabels: Record<BookStatus, string> = {
   planned: 'У планах',
   reading: 'Читаю',
@@ -53,6 +64,8 @@ export interface ReadingFlowApi {
   updateProfile: (input: ProfileInput) => Promise<ProfileInput>;
   setTheme: (theme: Theme) => Promise<void>;
   listBooks: () => Promise<Book[]>;
+  listBookNotes: (bookId: number) => Promise<BookNote[]>;
+  addBookNote: (bookId: number, input: NewBookNote) => Promise<BookNote>;
   addBook: (book: NewBook) => Promise<Book>;
   deleteBook: (id: number) => Promise<void>;
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;

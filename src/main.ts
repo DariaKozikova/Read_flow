@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import type { NewBookNote } from './shared';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { openDatabase } from './database';
@@ -49,6 +50,17 @@ else {
         verify(event);
         return database!.listBooks();
       });
+      ipcMain.handle('notes:list', (event, bookId: number) => {
+        verify(event);
+        return database!.listBookNotes(bookId);
+      });
+      ipcMain.handle(
+        'notes:add',
+        (event, bookId: number, input: NewBookNote) => {
+          verify(event);
+          return database!.addBookNote(bookId, input);
+        },
+      );
       ipcMain.handle('books:sessions', (event, bookId: number) => {
         verify(event);
         return database!.listBookSessions(bookId);

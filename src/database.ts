@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import type { BookNote, NewBookNote } from './shared';
 import type { BookDetailsInput } from './shared';
 import schema from '../database/schema.sql?raw';
 import type { ActiveReading, Book, CalendarEntry, NewBook } from './shared';
@@ -313,6 +314,47 @@ export function openDatabase(filename: string) {
         .get(cover, id);
       if (!row) throw new Error('Книгу не знайдено.');
       return toBook(row as unknown as BookRow);
+    },
+    listBookNotes: (bookId: number) => {
+      if (!Number.isSafeInteger(bookId) || bookId < 1)
+        throw new Error('Некоректна книга.');
+      return db
+        .prepare(
+          'SELECT id, book_id AS bookId, content, page_number AS pageNumber, created_at AS createdAt FROM notes WHERE book_id = ? ORDER BY created_at DESC, id DESC',
+        )
+        .all(bookId) as unknown as BookNote[];
+    },
+    addBookNote: (bookId: number, input: NewBookNote) => {
+      if (
+        !Number.isSafeInteger(bookId) ||
+        bookId < 1 ||
+        !input ||
+        typeof input.content !== 'string' ||
+        !input.content.trim() ||
+        input.content.length > 10000 ||
+        (input.pageNumber !== null &&
+          (!Number.isSafeInteger(input.pageNumber) || input.pageNumber < 1))
+      )
+        throw new Error('Перевір текст нотатки та номер сторінки.');
+      const now = Date.now();
+      const row = db
+        .prepare(
+          `INSERT INTO notes (book_id, content, page_number, created_at, updated_at)
+         SELECT id, ?, ?, ?, ? FROM books WHERE id = ? AND (? IS NULL OR total_pages >= ?)
+         RETURNING id, book_id AS bookId, content, page_number AS pageNumber, created_at AS createdAt`,
+        )
+        .get(
+          input.content.trim(),
+          input.pageNumber,
+          now,
+          now,
+          bookId,
+          input.pageNumber,
+          input.pageNumber,
+        );
+      if (!row)
+        throw new Error('Книгу не знайдено або сторінка виходить за її межі.');
+      return row as unknown as BookNote;
     },
     listBookSessions: (bookId: number) => {
       if (!Number.isSafeInteger(bookId) || bookId < 1)
