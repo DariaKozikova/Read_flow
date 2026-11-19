@@ -29,18 +29,47 @@ const firstDay = new Date(2026, 10, 10, 12).getTime();
 const nextDay = new Date(2026, 10, 11, 12).getTime();
 assert.deepEqual(
   summarizeReading([
-    { bookId: 1, startsAt: firstDay, minutes: 10, status: 'read' },
-    { bookId: 1, startsAt: firstDay + 3_600_000, minutes: 5, status: 'read' },
-    { bookId: 2, startsAt: nextDay, minutes: 7.5, status: 'read' },
+    {
+      bookId: 1,
+      startsAt: firstDay,
+      minutes: 10,
+      status: 'read',
+      startPage: 1,
+      endPage: 11,
+    },
+    {
+      bookId: 1,
+      startsAt: firstDay + 3_600_000,
+      minutes: 5,
+      status: 'read',
+      startPage: 11,
+      endPage: 16,
+    },
+    {
+      bookId: 2,
+      startsAt: nextDay,
+      minutes: 7.5,
+      status: 'read',
+      startPage: 5,
+      endPage: 5,
+    },
     {
       bookId: 3,
       startsAt: firstDay - 86_400_000,
       minutes: 2,
       status: 'paused',
+      startPage: 1,
+      endPage: null,
     },
   ]),
-  { milliseconds: 1_350_000, bookCount: 2, dayCount: 2 },
+  { milliseconds: 1_350_000, pages: 15, bookCount: 2, dayCount: 2 },
 );
+assert.deepEqual(summarizeReading([]), {
+  milliseconds: 0,
+  pages: 0,
+  bookCount: 0,
+  dayCount: 0,
+});
 const { openDatabase } = load('src/database.ts', {
   './shared': shared,
   '../database/schema.sql?raw': schema,

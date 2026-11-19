@@ -84,6 +84,10 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
   }, [request]);
 
   const visibleEntries = entries?.month === monthStart ? entries : undefined;
+  const monthly =
+    visibleEntries && !visibleEntries.failed
+      ? summarizeReading(visibleEntries.items)
+      : undefined;
   const entriesByDay = new Map<number, CalendarEntry[]>();
   for (const entry of visibleEntries?.items ?? []) {
     const day = startOfDay(new Date(entry.startsAt));
@@ -108,6 +112,39 @@ export function CalendarPage({ dailyGoal }: { dailyGoal: number }) {
       className="grid flex-1 content-start items-start gap-5 py-6 @min-[720px]:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]"
       aria-label="Календар читання"
     >
+      <div
+        className="rounded-panel border border-border bg-surface p-4 @min-[720px]:col-span-full"
+        aria-label="Підсумок за вибраний місяць"
+      >
+        {monthly ? (
+          <dl className="m-0 grid grid-cols-3 gap-3">
+            {[
+              {
+                label: 'Хвилини за місяць',
+                value: Math.floor(monthly.milliseconds / 60_000),
+              },
+              { label: 'Прочитані сторінки', value: monthly.pages },
+              { label: 'Дні з читанням', value: monthly.dayCount },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <dt className="text-[12px] text-muted">{label}</dt>
+                <dd className="m-0 text-[24px] font-semibold tabular-nums">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p
+            className="m-0 text-[13px]"
+            role={visibleEntries?.failed ? 'alert' : 'status'}
+          >
+            {visibleEntries?.failed
+              ? 'Не вдалося завантажити підсумок місяця.'
+              : 'Завантажуємо підсумок місяця…'}
+          </p>
+        )}
+      </div>
       <div className="min-w-0 rounded-panel border border-border bg-surface p-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2
