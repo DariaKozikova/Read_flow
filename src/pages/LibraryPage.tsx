@@ -10,10 +10,23 @@ type LibraryState =
   | { status: 'loading' | 'error' }
   | { status: 'loaded'; books: Book[] };
 
+const sortLabels = {
+  newest: 'Спочатку нові',
+  oldest: 'Спочатку давні',
+  title: 'За назвою',
+  author: 'За автором',
+};
+type BookSort = keyof typeof sortLabels;
+const collator = new Intl.Collator('uk-UA', {
+  sensitivity: 'base',
+  numeric: true,
+});
+
 export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all');
+  const [sort, setSort] = useState<BookSort>('newest');
   const [attempt, setAttempt] = useState(0);
   const [active, setActive] = useState<ActiveReading | null>(null);
   const [readingBook, setReadingBook] = useState<number>();
@@ -30,6 +43,17 @@ export function LibraryPage() {
                 author.toLocaleLowerCase('uk-UA').includes(search))),
         )
       : [];
+  filteredBooks.sort((first, second) => {
+    if (sort === 'newest') return second.id - first.id;
+    if (sort === 'oldest') return first.id - second.id;
+    if (sort === 'author') {
+      if (!first.author && second.author) return 1;
+      if (first.author && !second.author) return -1;
+      const authorOrder = collator.compare(first.author, second.author);
+      if (authorOrder) return authorOrder;
+    }
+    return collator.compare(first.title, second.title) || second.id - first.id;
+  });
 
   useEffect(() => {
     let current = true;
@@ -130,6 +154,20 @@ export function LibraryPage() {
               {(Object.keys(bookStatusLabels) as BookStatus[]).map((status) => (
                 <option key={status} value={status}>
                   {bookStatusLabels[status]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-[13px]">
+            Сортування
+            <select
+              className="rounded-control border border-border bg-input px-3 py-3 text-ink [font:inherit]"
+              value={sort}
+              onChange={(event) => setSort(event.target.value as BookSort)}
+            >
+              {(Object.keys(sortLabels) as BookSort[]).map((value) => (
+                <option key={value} value={value}>
+                  {sortLabels[value]}
                 </option>
               ))}
             </select>
