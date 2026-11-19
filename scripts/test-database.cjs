@@ -329,6 +329,9 @@ try {
   assert.equal(completedEntry.minutes, 1.5);
   assert.equal(completedEntry.startPage, 5);
   assert.equal(completedEntry.endPage, 12);
+  assert.deepEqual(fresh.listBookSessions(book.id), [completedEntry]);
+  assert.deepEqual(fresh.listBookSessions(99999), []);
+  assert.throws(() => fresh.listBookSessions(0));
   assert.deepEqual(
     fresh.listCalendarEntries(beforeReading - 1, beforeReading),
     [],

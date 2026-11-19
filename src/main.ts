@@ -49,6 +49,10 @@ else {
         verify(event);
         return database!.listBooks();
       });
+      ipcMain.handle('books:sessions', (event, bookId: number) => {
+        verify(event);
+        return database!.listBookSessions(bookId);
+      });
       ipcMain.handle('reading:active', (event) => {
         verify(event);
         return database!.getActiveReading();

@@ -58,6 +58,7 @@ export interface ReadingFlowApi {
   updateBookCover: (id: number, cover: Uint8Array | null) => Promise<Book>;
   updateBookDetails: (id: number, input: BookDetailsInput) => Promise<Book>;
   listCalendarEntries: (start: number, end: number) => Promise<CalendarEntry[]>;
+  listBookSessions: (bookId: number) => Promise<CalendarEntry[]>;
   getActiveReading: () => Promise<ActiveReading | null>;
   startReading: (bookId: number, startPage: number) => Promise<ActiveReading>;
   pauseReading: () => Promise<ActiveReading>;

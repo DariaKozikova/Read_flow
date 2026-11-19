@@ -3,6 +3,7 @@ import { BookDetailsEditor } from '../components/BookDetailsEditor';
 import { BookDeleteButton } from '../components/BookDeleteButton';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { BookForm } from '../components/BookForm';
+import { BookPage } from './BookPage';
 import type { ActiveReading, Book, BookStatus } from '../shared';
 import { bookStatusLabels } from '../shared';
 
@@ -25,6 +26,7 @@ const collator = new Intl.Collator('uk-UA', {
 export function LibraryPage() {
   const [state, setState] = useState<LibraryState>({ status: 'loading' });
   const [query, setQuery] = useState('');
+  const [openedBookId, setOpenedBookId] = useState<number>();
   const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all');
   const [sort, setSort] = useState<BookSort>('newest');
   const [attempt, setAttempt] = useState(0);
@@ -127,6 +129,19 @@ export function LibraryPage() {
       setReadingBusy(false);
     }
   }
+
+  const openedBook =
+    state.status === 'loaded'
+      ? state.books.find((book) => book.id === openedBookId)
+      : undefined;
+  if (openedBook)
+    return (
+      <BookPage
+        key={openedBook.id}
+        book={openedBook}
+        onBack={() => setOpenedBookId(undefined)}
+      />
+    );
 
   return (
     <section className="flex-1 py-6" aria-label="Список книг">
@@ -240,15 +255,28 @@ export function LibraryPage() {
                 className="min-w-0 rounded-panel border border-border bg-surface p-4"
               >
                 {book.coverUrl && (
-                  <img
-                    src={book.coverUrl}
-                    alt=""
-                    loading="lazy"
-                    className="mb-3 h-[126px] w-[84px] rounded-control bg-canvas object-contain"
-                  />
+                  <button
+                    type="button"
+                    className="mb-3 block border-0 bg-transparent p-0"
+                    aria-label={`Відкрити книгу «${book.title}»`}
+                    onClick={() => setOpenedBookId(book.id)}
+                  >
+                    <img
+                      src={book.coverUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-[126px] w-[84px] rounded-control bg-canvas object-contain"
+                    />
+                  </button>
                 )}
                 <h2 className="mb-1 wrap-anywhere text-[17px] font-semibold">
-                  {book.title}
+                  <button
+                    type="button"
+                    className="border-0 bg-transparent p-0 text-left [font:inherit] hover:underline"
+                    onClick={() => setOpenedBookId(book.id)}
+                  >
+                    {book.title}
+                  </button>
                 </h2>
                 {book.author && (
                   <p className="mb-2 wrap-anywhere text-[13px]">

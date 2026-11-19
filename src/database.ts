@@ -314,6 +314,19 @@ export function openDatabase(filename: string) {
       if (!row) throw new Error('Книгу не знайдено.');
       return toBook(row as unknown as BookRow);
     },
+    listBookSessions: (bookId: number) => {
+      if (!Number.isSafeInteger(bookId) || bookId < 1)
+        throw new Error('Некоректна книга.');
+      return db
+        .prepare(
+          `SELECT s.id, s.book_id AS bookId, b.title AS bookTitle,
+                s.started_at AS startsAt, s.duration_ms / 60000.0 AS minutes,
+                'read' AS status, s.start_page AS startPage, s.end_page AS endPage
+         FROM reading_sessions s JOIN books b ON b.id = s.book_id
+         WHERE s.book_id = ? ORDER BY s.started_at DESC, s.id DESC`,
+        )
+        .all(bookId) as unknown as CalendarEntry[];
+    },
     listCalendarEntries: (start: number, end: number) => {
       if (
         !Number.isSafeInteger(start) ||
