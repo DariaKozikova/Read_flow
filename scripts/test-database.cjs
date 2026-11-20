@@ -233,6 +233,7 @@ try {
     fresh.addBook({ title: 'Книга', author: '', total_pages: 0 }),
   );
   assert.deepEqual(fresh.listBooks(), [book]);
+  assert.equal(fresh.getCurrentBook(), null);
   assert.throws(() =>
     fresh.updateBookDetails(book.id, { title: ' ', author: '' }),
   );
@@ -334,6 +335,7 @@ try {
     runningSince: session.runningSince,
   });
   assert.ok(session.runningSince >= beforeReading);
+  assert.equal(fresh.getCurrentBook().id, book.id);
   assert.throws(() => fresh.startReading(book.id, 6));
   assert.throws(() => fresh.finishReading(4));
   assert.equal(fresh.getActiveReading().startPage, 5);
@@ -375,6 +377,7 @@ try {
   assert.equal(completedEntry.minutes, 1.5);
   assert.equal(completedEntry.startPage, 5);
   assert.equal(completedEntry.endPage, 12);
+  assert.equal(fresh.getCurrentBook().current_page, 12);
   assert.deepEqual(fresh.listBookSessions(book.id), [completedEntry]);
   assert.deepEqual(fresh.listBookSessions(99999), []);
   assert.throws(() => fresh.listBookSessions(0));
@@ -387,6 +390,7 @@ try {
   const finishedBook = fresh.finishReading(120);
   assert.equal(finishedBook.current_page, 120);
   assert.equal(finishedBook.status, 'finished');
+  assert.equal(fresh.getCurrentBook(), null);
   for (const total_pages of [0, 1.5, 1000001, 119]) {
     assert.throws(() =>
       fresh.updateBookDetails(book.id, {

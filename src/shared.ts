@@ -64,6 +64,7 @@ export interface ReadingFlowApi {
   updateProfile: (input: ProfileInput) => Promise<ProfileInput>;
   setTheme: (theme: Theme) => Promise<void>;
   listBooks: () => Promise<Book[]>;
+  getCurrentBook: () => Promise<Book | null>;
   listBookNotes: (bookId: number) => Promise<BookNote[]>;
   addBookNote: (bookId: number, input: NewBookNote) => Promise<BookNote>;
   addBook: (book: NewBook) => Promise<Book>;

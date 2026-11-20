@@ -50,6 +50,10 @@ else {
         verify(event);
         return database!.listBooks();
       });
+      ipcMain.handle('books:current', (event) => {
+        verify(event);
+        return database!.getCurrentBook();
+      });
       ipcMain.handle('notes:list', (event, bookId: number) => {
         verify(event);
         return database!.listBookNotes(bookId);

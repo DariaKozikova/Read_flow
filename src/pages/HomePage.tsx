@@ -1,4 +1,5 @@
 import { useReadingSummary } from '../useReadingSummary';
+import { CurrentBook } from '../components/CurrentBook';
 
 export function HomePage({ dailyGoal }: { dailyGoal: number }) {
   const { summary, retry } = useReadingSummary();
@@ -54,6 +55,7 @@ export function HomePage({ dailyGoal }: { dailyGoal: number }) {
           </>
         )}
       </div>
+      <CurrentBook />
     </section>
   );
 }

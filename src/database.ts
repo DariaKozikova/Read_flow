@@ -169,6 +169,19 @@ export function openDatabase(filename: string) {
       db.prepare('UPDATE settings SET theme = ? WHERE id = 1').run(theme);
     },
     close: () => db.close(),
+    getCurrentBook: () => {
+      const row = db
+        .prepare(
+          `SELECT ${bookColumns} FROM books
+         WHERE id IN (SELECT book_id FROM active_session)
+            OR (status IN ('reading', 'paused') AND current_page < total_pages)
+         ORDER BY EXISTS (SELECT 1 FROM active_session WHERE book_id = books.id) DESC,
+           (SELECT MAX(started_at) FROM reading_sessions WHERE book_id = books.id) DESC,
+           id DESC LIMIT 1`,
+        )
+        .get();
+      return row ? toBook(row as unknown as BookRow) : null;
+    },
     listBooks: () =>
       db
         .prepare(`SELECT ${bookColumns} FROM books ORDER BY id DESC`)
