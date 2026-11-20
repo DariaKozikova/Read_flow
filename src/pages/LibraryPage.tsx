@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { BookDetailsEditor } from '../components/BookDetailsEditor';
 import { BookDeleteButton } from '../components/BookDeleteButton';
-import { ReadingTimer } from '../components/ReadingTimer';
+import { ReadingControls } from '../components/ReadingControls';
 import { BookForm } from '../components/BookForm';
 import { BookPage } from './BookPage';
 import type { ActiveReading, Book, BookStatus } from '../shared';
@@ -139,6 +139,22 @@ export function LibraryPage() {
       <BookPage
         key={openedBook.id}
         book={openedBook}
+        readingControls={
+          <ReadingControls
+            book={openedBook}
+            active={active}
+            expanded={readingBook === openedBook.id}
+            busy={readingBusy}
+            error={readingError}
+            onSubmit={(event) => void saveReading(event, openedBook.id)}
+            onTogglePause={() => void toggleReadingPause()}
+            onCancel={() => setReadingBook(undefined)}
+            onOpen={() => {
+              setReadingError('');
+              setReadingBook(openedBook.id);
+            }}
+          />
+        }
         onBack={() => setOpenedBookId(undefined)}
       />
     );
@@ -328,70 +344,20 @@ export function LibraryPage() {
                     }}
                   />
                 </div>
-                {readingBook === book.id ? (
-                  <form
-                    key={active ? 'finish' : 'start'}
-                    className="mt-3 grid gap-2"
-                    onSubmit={(event) => void saveReading(event, book.id)}
-                  >
-                    {active && <ReadingTimer session={active} />}
-                    {active && (
-                      <button
-                        type="button"
-                        className="rounded-control border border-border bg-canvas px-3 py-2 text-[13px] hover:bg-soft"
-                        disabled={readingBusy}
-                        onClick={toggleReadingPause}
-                      >
-                        {active.runningSince === null
-                          ? 'Продовжити читання'
-                          : 'Пауза'}
-                      </button>
-                    )}
-                    <label className="grid gap-1 text-[13px]">
-                      {active ? 'Кінцева сторінка' : 'Початкова сторінка'}
-                      <input
-                        name="page"
-                        type="number"
-                        min={active?.startPage ?? 1}
-                        max={book.total_pages}
-                        defaultValue={
-                          active?.startPage ?? Math.max(1, book.current_page)
-                        }
-                        required
-                        disabled={readingBusy}
-                      />
-                    </label>
-                    <button className="primary-button" disabled={readingBusy}>
-                      {active ? 'Завершити читання' : 'Почати читання'}
-                    </button>
-                    {!active && (
-                      <button
-                        type="button"
-                        disabled={readingBusy}
-                        onClick={() => setReadingBook(undefined)}
-                      >
-                        Скасувати
-                      </button>
-                    )}
-                    {readingError && (
-                      <p className="error m-0" role="alert">
-                        {readingError}
-                      </p>
-                    )}
-                  </form>
-                ) : (
-                  <button
-                    type="button"
-                    className="primary-button mt-3"
-                    disabled={!!active || readingBusy}
-                    onClick={() => {
-                      setReadingError('');
-                      setReadingBook(book.id);
-                    }}
-                  >
-                    Читати
-                  </button>
-                )}
+                <ReadingControls
+                  book={book}
+                  active={active}
+                  expanded={readingBook === book.id}
+                  busy={readingBusy}
+                  error={readingError}
+                  onSubmit={(event) => void saveReading(event, book.id)}
+                  onTogglePause={() => void toggleReadingPause()}
+                  onCancel={() => setReadingBook(undefined)}
+                  onOpen={() => {
+                    setReadingError('');
+                    setReadingBook(book.id);
+                  }}
+                />
               </li>
             ))}
           </ul>

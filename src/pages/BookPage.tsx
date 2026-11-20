@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { BookNotes } from '../components/BookNotes';
 import { bookStatusLabels, type Book, type CalendarEntry } from '../shared';
 
@@ -10,7 +10,15 @@ const minutesFormat = new Intl.NumberFormat('uk-UA', {
   maximumFractionDigits: 1,
 });
 
-export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
+export function BookPage({
+  book,
+  onBack,
+  readingControls,
+}: {
+  book: Book;
+  onBack: () => void;
+  readingControls: ReactNode;
+}) {
   const [tab, setTab] = useState<'overview' | 'notes' | 'history'>('overview');
   const [sessions, setSessions] = useState<CalendarEntry[] | null>();
   const [attempt, setAttempt] = useState(0);
@@ -28,7 +36,7 @@ export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
     return () => {
       current = false;
     };
-  }, [book.id, attempt]);
+  }, [book.id, book, attempt]);
 
   return (
     <section className="py-6" aria-label={book.title}>
@@ -62,6 +70,7 @@ export function BookPage({ book, onBack }: { book: Book; onBack: () => void }) {
                 className="h-2 w-full accent-accent"
               />
             </label>
+            {readingControls}
           </div>
         </div>
         <div
